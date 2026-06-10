@@ -18,35 +18,46 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("Score : \(count)")
-                    .font(.system(size: 30))
-
-                Spacer()
-
-                Button {
-                    if timerLeft <= 10 && timerLeft > 0 {
-                        count += 1
-                    }
-
-                    if timerLeft == 10 {
-                        isTimerRunning = true
-                    }
-                } label: {
-                    Text("Tap me!")
-                        .frame(width: 200, height: 200)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(Color.white)
+            ZStack {
+//                Color(
+//                    red:200 / 255,
+//                    green: 243 / 255,
+//                    blue: 247 / 255
+//                ).ignoresSafeArea(edges: .all) //color the entire area
+                
+                VStack {
+                    Text("Score : \(count)")
                         .font(.system(size: 30))
-                        .clipShape(Circle())
+
+                    Spacer()
+
+                    Button {
+                        if timerLeft <= 10 && timerLeft > 0 {
+                            count += 1
+                        }
+
+                        if timerLeft == 10 {
+                            isTimerRunning = true
+                        }
+                    } label: {
+                        Text("Tap me!")
+                            .frame(width: 200, height: 200)
+                            .padding()
+                            .background(Color.red)
+                            .foregroundColor(Color.white)
+                            .font(.system(size: 30))
+                            .clipShape(Circle())
+                    }
+
+                    Spacer()
+
+                    Text("Timer: \(timerLeft)")
+                        .font(.system(size: 30))
                 }
-
-                Spacer()
-
-                Text("Timer: \(timerLeft)")
-                    .font(.system(size: 30))
+                
             }
+            
+            
             .onReceive(timer) { _ in
                 if isTimerRunning && timerLeft > 0 {
                     timerLeft -= 1
@@ -63,6 +74,7 @@ struct ContentView: View {
             }
         }
     }
+
 
     func resetGame() {
         count = 0
