@@ -28,12 +28,15 @@ struct ContentView: View {
     //I want to change the font size at the same time
     @State private var fontSize : CGFloat = 30
     
+    
     @State private var isRed: Bool = true
     
+    //Checks if the color is red
     var targetColor : Color {
         isRed ? Color.red : Color.yellow
     }
     
+    //if the color is red the text changes
     var targetText : String {
         isRed ? "Tap me!" : "Bonus!"
     }
@@ -104,11 +107,21 @@ struct ContentView: View {
             .onReceive(timer) { _ in
                 if isTimerRunning && timerLeft > 0 {
                     timerLeft -= 1
+                    
+                    //this allows that after a second of bonus points it will turn back to red
+                    if !isRed {
+                        toggleTarget()
+                    }
+                    
+                    //To match with the font size
                     fontSize -= 1.5
+                    
+                    //reduces the button size
                     withAnimation(.easeInOut(duration:0.9)){
                         buttonSize -= 15
                     }
                     
+                    //ever 4 seconds the button will change to yellow
                     if timerLeft % 4 == 0 {
                         toggleTarget()
                     }
