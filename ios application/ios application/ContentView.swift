@@ -12,7 +12,7 @@ struct ContentView: View {
     @State private var count = 0  //To get the changing score counter
     
     //To create a timer
-    @State private var timerLeft = 10
+    @State private var timerLeft = 10                            //CHANGE THIS TESTING PURPOSE
     @State private var isTimerRunning = false
     
     //New navigation layer
@@ -59,7 +59,7 @@ struct ContentView: View {
                             count += 1
                         }
 
-                        if timerLeft == 10 {
+                        if timerLeft == 10 {                 //CHANGE THIS TESTING PURPOSE
                             isTimerRunning = true
                         }
                     } label: {
@@ -114,7 +114,7 @@ struct ContentView: View {
     //This functions reset the entire score and time once you are navigated from gameOverView to this view
     func resetGame() {
         count = 0
-        timerLeft = 10
+        timerLeft = 10                          //CHANGE THIS FOR TESTING PURPOSE ONLY
         isTimerRunning = false
         buttonSize = 200
         xPosition = 200
