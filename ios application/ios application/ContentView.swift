@@ -9,15 +9,35 @@ import SwiftUI
 import Combine
 
 struct ContentView: View {
-    @State private var count = 0
+    @State private var count = 0  //To get the changing score counter
+    
+    //To create a timer
     @State private var timerLeft = 10
     @State private var isTimerRunning = false
+    
+    //New navigation layer
     @State private var goToGameover = false
     
+    //Change of button size
+    @State private var buttonSize : CGFloat = 200
+    
+    //Change the button size
+    @State private var xPosition : CGFloat = 200
+    @State private var yPosition : CGFloat = 350
+    
+    //I want to change the font size at the same time
+    @State private var fontSize : CGFloat = 30
+    
+    //Create an internal timer
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
+    //Body
     var body: some View {
+        
+        //Changes from this view to other view
         NavigationStack {
+            
+            //Enter layer
             ZStack {
 //                Color(
 //                    red:200 / 255,
@@ -25,7 +45,10 @@ struct ContentView: View {
 //                    blue: 247 / 255
 //                ).ignoresSafeArea(edges: .all) //color the entire area
                 
+                
+                //Vertical layer
                 VStack {
+                    
                     Text("Score : \(count)")
                         .font(.system(size: 30))
 
@@ -41,31 +64,44 @@ struct ContentView: View {
                         }
                     } label: {
                         Text("Tap me!")
-                            .frame(width: 200, height: 200)
+                            .frame(width: buttonSize, height: buttonSize)
                             .padding()
                             .background(Color.red)
                             .foregroundColor(Color.white)
-                            .font(.system(size: 30))
+                            .font(.system(size: fontSize))
                             .clipShape(Circle())
+                        
                     }
+                    .position(x: xPosition, y: yPosition)
 
                     Spacer()
 
                     Text("Timer: \(timerLeft)")
                         .font(.system(size: 30))
-                }
+                }//End of VStack
                 
-            }
+            } //End of ZStack
             
             
+            
+            //this modifier explains the each passing second of timer
             .onReceive(timer) { _ in
                 if isTimerRunning && timerLeft > 0 {
                     timerLeft -= 1
+                    fontSize -= 1.3
+                    withAnimation(.easeInOut(duration:0.9)){
+                        buttonSize -= 15
+                    }
+                    moveTarget()
+                    
                 } else if timerLeft == 0 {
                     isTimerRunning = false
                     goToGameover = true
                 }
+                
             }
+            
+            //After GameOverView it comes back to this layer
             .navigationDestination(isPresented: $goToGameover) {
                 GameOverView(score: count) {
                     resetGame()
@@ -75,11 +111,25 @@ struct ContentView: View {
         }
     }
 
-
+    //This functions reset the entire score and time once you are navigated from gameOverView to this view
     func resetGame() {
         count = 0
         timerLeft = 10
         isTimerRunning = false
+        buttonSize = 200
+        xPosition = 200
+        yPosition = 350
+        fontSize = 30
+    }
+    
+    // This function is created to move the function of the button
+    func moveTarget() {
+        
+        withAnimation(.easeInOut(duration:0.5)){
+            xPosition = CGFloat.random(in: 100...300)
+            yPosition = CGFloat.random(in: 100...500)
+        }
+
     }
 }
 

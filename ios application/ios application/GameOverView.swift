@@ -25,7 +25,7 @@ struct GameOverView: View {
                 .font(.system(size: 30))
             
             Button ("Play Again"){
-                onRestart() //Once you click the button restart 
+                onRestart() //Once you click the button restart and resets the timer and score
             }
             .padding()
         }
