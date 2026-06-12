@@ -158,7 +158,7 @@ struct ContentView: View {
                     tickCount += 1
                     
                     
-                    if tickCount % 2 == 0 {
+                    if tickCount % 1 == 0 {
                         generateTarget()
                         moveTarget()
                     }
