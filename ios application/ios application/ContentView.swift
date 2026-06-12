@@ -28,6 +28,18 @@ struct ContentView: View {
     //I want to change the font size at the same time
     @State private var fontSize : CGFloat = 30
     
+    @State private var isRed: Bool = true
+    
+    var targetColor : Color {
+        isRed ? Color.red : Color.yellow
+    }
+    
+    var targetText : String {
+        isRed ? "Tap me!" : "Bonus!"
+    }
+    
+    
+    
     //Create an internal timer
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -56,17 +68,21 @@ struct ContentView: View {
 
                     Button {
                         if timerLeft <= 10 && timerLeft > 0 {
-                            count += 1
+                            if isRed {
+                                count += 1
+                            } else {
+                                count += 5
+                            }
                         }
 
                         if timerLeft == 10 {                 //CHANGE THIS TESTING PURPOSE
                             isTimerRunning = true
                         }
                     } label: {
-                        Text("Tap me!")
+                        Text(targetText)
                             .frame(width: buttonSize, height: buttonSize)
                             .padding()
-                            .background(Color.red)
+                            .background(targetColor)
                             .foregroundColor(Color.white)
                             .font(.system(size: fontSize))
                             .clipShape(Circle())
@@ -88,9 +104,13 @@ struct ContentView: View {
             .onReceive(timer) { _ in
                 if isTimerRunning && timerLeft > 0 {
                     timerLeft -= 1
-                    fontSize -= 1.3
+                    fontSize -= 1.5
                     withAnimation(.easeInOut(duration:0.9)){
                         buttonSize -= 15
+                    }
+                    
+                    if timerLeft % 4 == 0 {
+                        toggleTarget()
                     }
                     moveTarget()
                     
@@ -120,6 +140,7 @@ struct ContentView: View {
         xPosition = 200
         yPosition = 350
         fontSize = 30
+        isRed = true
     }
     
     // This function is created to move the function of the button
@@ -130,6 +151,13 @@ struct ContentView: View {
             yPosition = CGFloat.random(in: 100...500)
         }
 
+    }
+    
+    func toggleTarget()
+    {
+        withAnimation(.easeInOut(duration: 0.3)){
+            isRed.toggle( )
+        }
     }
 }
 
