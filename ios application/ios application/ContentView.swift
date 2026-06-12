@@ -29,16 +29,27 @@ struct ContentView: View {
     @State private var fontSize : CGFloat = 30
     
     
-    @State private var isRed: Bool = true
+//    @State private var isRed: Bool = true
+    
+    
+    @State private var currentTarget: targetType = .red
+    
+    @State private var tickCount = 0
     
     //Checks if the color is red
-    var targetColor : Color {
-        isRed ? Color.red : Color.yellow
-    }
+//    var targetColor : Color {
+//        isRed ? Color.red : Color.yellow
+//    }
     
     //if the color is red the text changes
-    var targetText : String {
-        isRed ? "Tap me!" : "Bonus!"
+//    var targetText : String {
+//        isRed ? "Tap me!" : "Bonus!"
+//    }
+    
+    enum targetType{
+        case red
+        case yellow
+        case bomb
     }
     
     
@@ -71,24 +82,61 @@ struct ContentView: View {
 
                     Button {
                         if timerLeft <= 10 && timerLeft > 0 {
-                            if isRed {
-                                count += 1
-                            } else {
-                                count += 5
-                            }
+                            
+//                            if isRed {
+//                                count += 1
+//                            } else {
+//                                count += 5
+//                            }
+                            
+                            // Button switches each second
+                            switch currentTarget{
+                                
+                            case .red
+                                : count += 1
+                                
+                            case .yellow
+                                : count += 5
+                                
+                            case .bomb
+                                : count -= 10
+                            }//end of switch
                         }
 
                         if timerLeft == 10 {                 //CHANGE THIS TESTING PURPOSE
                             isTimerRunning = true
                         }
                     } label: {
-                        Text(targetText)
-                            .frame(width: buttonSize, height: buttonSize)
-                            .padding()
-                            .background(targetColor)
-                            .foregroundColor(Color.white)
-                            .font(.system(size: fontSize))
-                            .clipShape(Circle())
+                        
+                        switch currentTarget {
+                            
+                        case .red:
+                            Text("Tap me!")
+                                .frame(width: buttonSize, height: buttonSize)
+                                .padding()
+                                .background(.red)
+                                .foregroundColor(Color.white)
+                                .font(.system(size: fontSize))
+                                .clipShape(Circle())
+                            
+                            
+                        case .yellow:
+                            Text ("Bonus!")
+                                .frame(width: buttonSize, height: buttonSize)
+                                .padding()
+                                .background(.yellow)
+                                .foregroundColor(Color.white)
+                                .font(.system(size: fontSize))
+                                .clipShape(Circle())
+                            
+                            
+                        case .bomb:
+                            Image("bomb-4")
+                                .resizable()
+                                .frame(width: buttonSize, height: buttonSize)
+                                .scaledToFit()
+                        }
+                    
                         
                     }
                     .position(x: xPosition, y: yPosition)
@@ -107,11 +155,18 @@ struct ContentView: View {
             .onReceive(timer) { _ in
                 if isTimerRunning && timerLeft > 0 {
                     timerLeft -= 1
+                    tickCount += 1
+                    
+                    
+                    if tickCount % 2 == 0 {
+                        generateTarget()
+                        moveTarget()
+                    }
                     
                     //this allows that after a second of bonus points it will turn back to red
-                    if !isRed {
-                        toggleTarget()
-                    }
+                    //                    if !isRed {
+                    //                        toggleTarget()
+                    //                    }
                     
                     //To match with the font size
                     fontSize -= 1.5
@@ -122,15 +177,16 @@ struct ContentView: View {
                     }
                     
                     //ever 4 seconds the button will change to yellow
-                    if timerLeft % 4 == 0 {
-                        toggleTarget()
-                    }
-                    moveTarget()
+//                    if timerLeft % 2 == 0 {
+//                        generateTarget()
+//                    }
+//                    
+//                    moveTarget()
                     
-                } else if timerLeft == 0 {
-                    isTimerRunning = false
-                    goToGameover = true
-                }
+                    } else if timerLeft == 0 {
+                        isTimerRunning = false
+                        goToGameover = true
+                    }
                 
             }
             
@@ -153,7 +209,8 @@ struct ContentView: View {
         xPosition = 200
         yPosition = 350
         fontSize = 30
-        isRed = true
+        currentTarget = .red
+//        isRed = true
     }
     
     // This function is created to move the function of the button
@@ -166,11 +223,24 @@ struct ContentView: View {
 
     }
     
-    func toggleTarget()
-    {
-        withAnimation(.easeInOut(duration: 0.3)){
-            isRed.toggle( )
-        }
+//    func toggleTarget()
+//    {
+//        withAnimation(.easeInOut(duration: 0.3)){
+//            isRed.toggle( )
+//        }
+//    }
+    
+    
+    func generateTarget() {
+        let targets : [targetType] = [
+            .red,
+            .red,
+            .yellow,
+            .bomb
+        ]
+        
+        currentTarget = targets.randomElement()!
+        
     }
 }
 
