@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import AVFoundation
 
 struct ContentView: View {
     @State private var count = 0  //To get the changing score counter
@@ -35,6 +36,9 @@ struct ContentView: View {
     @State private var currentTarget: targetType = .red
     
     @State private var tickCount = 0
+    
+    //This is to add a sound
+    @State private var audioPlayer : AVAudioPlayer?
     
     //Checks if the color is red
 //    var targetColor : Color {
@@ -89,17 +93,20 @@ struct ContentView: View {
 //                                count += 5
 //                            }
                             
-                            // Button switches each second
+                            // Button score for each tap and color
                             switch currentTarget{
                                 
                             case .red
                                 : count += 1
+                                playSound(named: "points")
                                 
                             case .yellow
                                 : count += 5
+                                playSound(named: "bonus")
                                 
                             case .bomb
                                 : count -= 10
+                                playSound(named: "bomb")
                             }//end of switch
                         }
 
@@ -135,6 +142,7 @@ struct ContentView: View {
                                 .resizable()
                                 .frame(width: buttonSize, height: buttonSize)
                                 .scaledToFit()
+                                .sensoryFeedback(.success, trigger: currentTarget)
                         }
                     
                         
@@ -235,11 +243,28 @@ struct ContentView: View {
         let targets : [targetType] = [
             .red,
             .red,
+            .red,
             .yellow,
             .bomb
         ]
         
         currentTarget = targets.randomElement()!
+        
+    }
+    
+    
+    func playSound (named SoundName : String) {
+        guard let url = Bundle.main.url(forResource: SoundName, withExtension: "mp3")else {
+            print ("Sound not found")
+            return
+        }
+        
+        do {
+            audioPlayer = try AVAudioPlayer (contentsOf: url)
+            audioPlayer?.play()
+        } catch {
+            print ("error playing sound : \(error)")
+        }
         
     }
 }
