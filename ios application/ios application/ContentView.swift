@@ -29,6 +29,8 @@ struct ContentView: View {
     //I want to change the font size at the same time
     @State private var fontSize : CGFloat = 30
     
+    @State private var game = 30 // CHANGE THISSSSS
+    
     
 //    @State private var isRed: Bool = true
     
