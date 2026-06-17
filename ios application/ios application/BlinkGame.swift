@@ -25,6 +25,9 @@ struct BlinkGame: View {
         Card(isLit: false)
     ]
     
+    //To get previous level
+    @State private var previousLevel : Int = 1
+    
     //Identifiable cards each unique
     struct Card : Identifiable {
         let id = UUID()
@@ -127,23 +130,31 @@ struct BlinkGame: View {
 
             }
                 
+                let newLevel : Int
+            
                 //Level checker
                 if elapsedTime < 15 {
-                    level = 1
+                    newLevel = 1
                 }
                 else if elapsedTime < 30 {
-                    level = 2
+                    newLevel = 2
                 }
                 else if elapsedTime < 45 {
-                    level = 3
+                    newLevel = 3
                 }
                 else{
-                    level = 4
+                    newLevel = 4
                 }
-                
+            
+                if newLevel != level {
+                    level = newLevel
+                    setupCards(for: level)
+                }
+            
                 for i in cards.indices {
                     cards[i].isLit = false
                 }
+            
             
             
             if let index = cards.indices.randomElement() {
