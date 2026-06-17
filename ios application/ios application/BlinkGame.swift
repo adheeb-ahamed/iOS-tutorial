@@ -118,33 +118,39 @@ struct BlinkGame: View {
         }// End of Zstack
         //this modifier explains the each passing second of timer
         .onReceive(timer) { _ in
-            if isTimerRunning == true && timerLeft > 0 {
+            if isTimerRunning && timerLeft > 0 {
                 timerLeft -= 1
+                
+            }else if timerLeft == 0{
+                isTimerRunning = false
+                return
+
+            }
                 
                 //Level checker
                 if elapsedTime < 15 {
                     level = 1
-                    cards.randomElement()?.isLit = true
                 }
                 else if elapsedTime < 30 {
                     level = 2
-                    cards.randomElement()?.isLit = true
                 }
                 else if elapsedTime < 45 {
                     level = 3
-                    cards.randomElement()?.isLit = true
                 }
                 else{
                     level = 4
-                    cards.randomElement()?.isLit = true
                 }
                 
-                setupCards(for: level)
-                
-            }else if timerLeft == 0{
-                isTimerRunning = false
-
+                for i in cards.indices {
+                    cards[i].isLit = false
+                }
+            
+            
+            if let index = cards.indices.randomElement() {
+                cards[index].isLit = true
             }
+                
+            
         }
         
     }
