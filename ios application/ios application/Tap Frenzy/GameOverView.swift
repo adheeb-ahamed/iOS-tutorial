@@ -11,6 +11,7 @@ struct GameOverView: View {
     var score: Int
     var onRestart: () -> Void //the moment you click restart it becomes zero
     
+    
     var body: some View {
         
         VStack (spacing: 20){
@@ -27,6 +28,7 @@ struct GameOverView: View {
             
             Button {
                 onRestart() //Once you click the button restart and resets the timer and score
+
             } label : {
                 Image("undo")
                     .resizable()

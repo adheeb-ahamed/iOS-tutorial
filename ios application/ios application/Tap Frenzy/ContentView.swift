@@ -30,6 +30,10 @@ struct ContentView: View {
     @State private var fontSize : CGFloat = 30
     
     
+    // To stop timer from running
+    @State private var cancellable : Cancellable?
+    
+    
 //    @State private var isRed: Bool = true
     
     
@@ -39,6 +43,7 @@ struct ContentView: View {
     
     //This is to add a sound
     @State private var audioPlayer : AVAudioPlayer?
+    
     
     //Checks if the color is red
 //    var targetColor : Color {
@@ -57,6 +62,12 @@ struct ContentView: View {
     }
     
     
+    enum GameState{
+        case playing
+        case gameOver
+    }
+    
+    
     
     //Create an internal timer
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -65,7 +76,8 @@ struct ContentView: View {
     var body: some View {
         
         //Changes from this view to other view
-        NavigationStack {
+        //NO NEED OF TWO NAVIGATION STACK 
+        //NavigationStack {
             
             //Enter layer
             ZStack {
@@ -74,6 +86,7 @@ struct ContentView: View {
 //                    green: 243 / 255,
 //                    blue: 247 / 255
 //                ).ignoresSafeArea(edges: .all) //color the entire area
+                
                 
                 
                 //Vertical layer
@@ -98,14 +111,17 @@ struct ContentView: View {
                                 
                             case .red
                                 : count += 1
+                                print ("red is being tapped")
                                 playSound(named: "points")
                                 
                             case .yellow
                                 : count += 5
+                                print ("Yellow is being tapped")
                                 playSound(named: "bonus")
                                 
                             case .bomb
                                 : count -= 10
+                                print ("bomb is being tapped")
                                 playSound(named: "bomb")
                             }//end of switch
                         }
@@ -191,25 +207,31 @@ struct ContentView: View {
 //                    
 //                    moveTarget()
                     
-                    } else if timerLeft == 0 {
-                        isTimerRunning = false
+                    } else if timerLeft == 0 && !goToGameover {
                         goToGameover = true
+                        isTimerRunning = false
+                        stopTimer()
                     }
+                
+                
                 
             }
             
             //After GameOverView it comes back to this layer
             .navigationDestination(isPresented: $goToGameover) {
                 GameOverView(score: count) {
+                    print ("Restart pressed")
                     resetGame()
                     goToGameover = false
                 }
             }
-        }
+       // }
     }
 
     //This functions reset the entire score and time once you are navigated from gameOverView to this view
     func resetGame() {
+        print ("Resetting game")
+        stopTimer()
         count = 0
         timerLeft = 10                          //CHANGE THIS FOR TESTING PURPOSE ONLY
         isTimerRunning = false
@@ -252,24 +274,36 @@ struct ContentView: View {
         
     }
     
+    //To start or cancel timer
+    func startTimer() {
+        // Using autoconnect on the timer; nothing needed here for now.
+        // Keep this in case you later want manual control.
+        // cancellable = timer.connect()
+    }
     
-    func playSound (named SoundName : String) {
-        guard let url = Bundle.main.url(forResource: SoundName, withExtension: "mp3")else {
-            print ("Sound not found")
+    func stopTimer() {
+        cancellable?.cancel()
+        cancellable = nil
+    }
+    
+    func playSound(named SoundName: String) {
+        guard let url = Bundle.main.url(forResource: SoundName, withExtension: "mp3") else {
+            print("Sound not found")
             return
         }
-        
         do {
-            audioPlayer = try AVAudioPlayer (contentsOf: url)
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.play()
         } catch {
-            print ("error playing sound : \(error)")
+            print("error playing sound : \(error)")
         }
-        
     }
 }
 
-#Preview {
-    ContentView()
+
+#Preview("ContentView Reset Game") {
+    NavigationStack {
+        ContentView()
+    }
 }
 
