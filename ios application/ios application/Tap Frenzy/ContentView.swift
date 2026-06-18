@@ -35,6 +35,9 @@ struct ContentView: View {
     // To stop timer from running
     @State private var cancellable : Cancellable?
     
+    //Temporary storage
+    @AppStorage("TapGameHighScore") private var highScore: Int = 0
+    
     
 //    @State private var isRed: Bool = true
     
@@ -83,6 +86,10 @@ struct ContentView: View {
             
             //Enter layer
             ZStack {
+                
+                Text ("High Score : \(highScore)")
+                    .position(x: 200, y: 55)
+                    .foregroundStyle(Color.gray)
 //                Color(
 //                    red:200 / 255,
 //                    green: 243 / 255,
@@ -108,6 +115,7 @@ struct ContentView: View {
 //                                count += 5
 //                            }
                             
+                            
                             // Button score for each tap and color
                             switch currentTarget{
                                 
@@ -122,9 +130,15 @@ struct ContentView: View {
                                 playSound(named: "bonus")
                                 
                             case .bomb
-                                : count -= 10
+                                :count -= 10
                                 print ("bomb is being tapped")
                                 playSound(named: "bomb")
+                                if count < 5 {
+                                    count = 0
+                                }
+                                
+                                
+                                
                             }//end of switch
                         }
 
@@ -212,6 +226,9 @@ struct ContentView: View {
                     } else if timerLeft == 0 && !goToGameover {
                         goToGameover = true
                         isTimerRunning = false
+                        if count > highScore{
+                            highScore = count
+                        }
                         stopTimer()
                     }
             }

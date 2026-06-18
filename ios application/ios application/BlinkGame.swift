@@ -63,6 +63,9 @@ struct BlinkGame: View {
     }
     
     @State private var lastLightUpdate: Date = .now
+    
+    //Temporary storage
+    @AppStorage("lightItUpHighScore") private var highScore: Int = 0
 
     
     //Create an internal timer
@@ -110,8 +113,10 @@ struct BlinkGame: View {
                 .foregroundStyle(Color.blue)
                 .position(x: 360, y: 130)
             
-            Text ("Cards : \(cards.count)")
+            Text ("High Score : \(highScore)")
                 .position(x: 200, y: 190)
+                .foregroundStyle(Color.gray)
+            
             
             
             VStack{
@@ -159,6 +164,10 @@ struct BlinkGame: View {
                 if timerLeft == 0{
                     isTimerRunning = false
                     stopTimer()
+                    
+                    if scoreResult > highScore{
+                        highScore = scoreResult
+                    }
                     
                     DispatchQueue.main.async {
                         goToGameover = true
