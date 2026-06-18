@@ -51,6 +51,18 @@ struct BlinkGame: View {
     var elapsedTime: Int  {
         60 - timerLeft
     }
+    
+    var lightInterval : Double {
+        switch level {
+        case 1 : return 1.5
+        case 2 : return 1.2
+        case 3 : return 1.0
+        case 4 : return 0.8
+        default: return 1.5
+        }
+    }
+    
+    @State private var lastLightUpdate: Date = .now
 
     
     //Create an internal timer
@@ -180,24 +192,18 @@ struct BlinkGame: View {
                     setupCards(for: level)
                 }
             
-                for i in cards.indices {
-                    cards[i].isLit = false
-                }
+                updateLighting()
             
-            
-            
-            if let index = cards.indices.randomElement() {
-                cards[index].isLit = true
             }
-                
+            //After GameOverView it comes back to this layer
+            .navigationDestination(isPresented: $goToGameover) {
+                GameOverView(score: scoreResult) {
+                    print ("Restart pressed")
+                    resetGame()
+                    goToGameover = false
             
-        }
-        //After GameOverView it comes back to this layer
-        .navigationDestination(isPresented: $goToGameover) {
-            GameOverView(score: scoreResult) {
-                print ("Restart pressed")
-                resetGame()
-                goToGameover = false
+        
+        
             }
         }
         
@@ -242,6 +248,32 @@ struct BlinkGame: View {
     func stopTimer() {
         cancellable?.cancel()
         cancellable = nil
+    }
+    
+    //New function to update lighting with level
+    func updateLighting(){
+        
+        let now = Date()
+        
+        if now.timeIntervalSince(lastLightUpdate) >= lightInterval{
+            lastLightUpdate = now
+            
+            for i in cards.indices {
+                cards[i].isLit = false
+            }
+            
+            //For level 4, two cards are lit
+            if level == 4 {
+                let randomIndexes = cards.indices.shuffled().prefix(2)
+                for i in randomIndexes {
+                    cards[i].isLit.toggle()
+                }
+            }else {
+                if let index = cards.indices.randomElement() {
+                    cards[index].isLit.toggle()
+                }
+            }
+        }
     }
 }
 
