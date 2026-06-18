@@ -227,7 +227,9 @@ struct BlinkGame: View {
     func resetGame(){
         scoreResult = 0
         level = 1
+        isTimerRunning = true
         setupCards(for: level)
+        timerLeft = 60                      //CHANGE THIS FOR TESTING PURPOSE
     }
     
     //To start or cancel timer

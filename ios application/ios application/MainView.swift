@@ -119,11 +119,7 @@ struct MainView: View {
           
                             Spacer()
                         
-                        
-                            VStack(spacing : 20){
-                                
-                            
-                            } //End of VStack
+
                             
                         } //End of ZStack
                         .navigationDestination(isPresented: $startTapGame) {
