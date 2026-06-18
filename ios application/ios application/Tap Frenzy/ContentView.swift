@@ -214,9 +214,6 @@ struct ContentView: View {
                         isTimerRunning = false
                         stopTimer()
                     }
-                
-                
-                
             }
             
             //After GameOverView it comes back to this layer

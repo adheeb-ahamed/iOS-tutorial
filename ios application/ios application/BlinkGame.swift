@@ -28,6 +28,12 @@ struct BlinkGame: View {
     //To get previous level
     @State private var previousLevel : Int = 1
     
+    // To stop timer from running
+    @State private var cancellable : Cancellable?
+    
+    //Game Over navigation layer
+    @State private var goToGameover = false
+    
     //Identifiable cards each unique
     struct Card : Identifiable {
         let id = UUID()
@@ -84,7 +90,7 @@ struct BlinkGame: View {
             Text("Level: ")
                 .font(.system(size: 20))
                 .bold(true)
-                .position(x: 300, y: 130)
+                .position(x: 295, y: 130)
             
             Text ("\(level)/4")
                 .font(.system(size: 40))
@@ -93,7 +99,7 @@ struct BlinkGame: View {
                 .position(x: 360, y: 130)
             
             Text ("Cards : \(cards.count)")
-                .position(x: 200, y: 200)
+                .position(x: 200, y: 190)
             
             
             VStack{
@@ -124,7 +130,7 @@ struct BlinkGame: View {
                     }
                 } //Lazy grid
             }
-            .position(x: 200, y: 400)
+            .position(x: 200, y: 420)
             
             
             Text("Timer: \(timerLeft)")
@@ -137,14 +143,21 @@ struct BlinkGame: View {
         }// End of Zstack
         //this modifier explains the each passing second of timer
         .onReceive(timer) { _ in
-            if isTimerRunning && timerLeft > 0 {
+            guard isTimerRunning && timerLeft > 0 else{
+                if timerLeft == 0{
+                    isTimerRunning = false
+                    stopTimer()
+                    
+                    DispatchQueue.main.async {
+                        goToGameover = true
+                    }
+                }
+                return
+            }
                 timerLeft -= 1
                 
-            }else if timerLeft == 0{
-                isTimerRunning = false
-                return
-
-            }
+            
+                
                 
                 let newLevel : Int
             
@@ -179,9 +192,18 @@ struct BlinkGame: View {
                 
             
         }
+        //After GameOverView it comes back to this layer
+        .navigationDestination(isPresented: $goToGameover) {
+            GameOverView(score: scoreResult) {
+                print ("Restart pressed")
+                resetGame()
+                goToGameover = false
+            }
+        }
         
     }
     
+    // For each level card increases and then lights 
     func setupCards(for newLevel: Int){
         switch newLevel {
         case 1:
@@ -199,6 +221,25 @@ struct BlinkGame: View {
         default :
             break
         }
+    }
+    
+    
+    func resetGame(){
+        scoreResult = 0
+        level = 1
+        setupCards(for: level)
+    }
+    
+    //To start or cancel timer
+    func startTimer() {
+        // Using autoconnect on the timer; nothing needed here for now.
+        // Keep this in case you later want manual control.
+        // cancellable = timer.connect()
+    }
+    
+    func stopTimer() {
+        cancellable?.cancel()
+        cancellable = nil
     }
 }
 
