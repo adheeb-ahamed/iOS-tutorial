@@ -34,6 +34,9 @@ struct BlinkGame: View {
     //Game Over navigation layer
     @State private var goToGameover = false
     
+    @Binding var showGame: Bool 
+     
+    
     //Identifiable cards each unique
     struct Card : Identifiable {
         let id = UUID()
@@ -69,7 +72,7 @@ struct BlinkGame: View {
 
     
     //Create an internal timer
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
     
     var body: some View {
@@ -206,15 +209,18 @@ struct BlinkGame: View {
             }
             //After GameOverView it comes back to this layer
             .navigationDestination(isPresented: $goToGameover) {
-                GameOverView(score: scoreResult) {
-                    print ("Restart pressed")
-                    resetGame()
-                    goToGameover = false
-            
-        
-        
+                GameOverView(
+                    score: scoreResult,
+                    onRestart: {
+                        resetGame()
+                        goToGameover = false
+                    },
+                    onHome: {
+                        goToGameover = false
+                        showGame = false
+                    }
+                )
             }
-        }
         
     }
     
@@ -287,6 +293,6 @@ struct BlinkGame: View {
 }
 
 #Preview {
-    BlinkGame()
+    BlinkGame(showGame: .constant(true))
 }
 

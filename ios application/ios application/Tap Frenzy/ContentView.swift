@@ -35,6 +35,8 @@ struct ContentView: View {
     // To stop timer from running
     @State private var cancellable : Cancellable?
     
+    @Binding var showGame: Bool
+    
     //Temporary storage
     @AppStorage("TapGameHighScore") private var highScore: Int = 0
     
@@ -235,11 +237,17 @@ struct ContentView: View {
             
             //After GameOverView it comes back to this layer
             .navigationDestination(isPresented: $goToGameover) {
-                GameOverView(score: count) {
-                    print ("Restart pressed")
-                    resetGame()
-                    goToGameover = false
-                }
+                GameOverView(
+                    score: count,
+                    onRestart: {
+                        resetGame()
+                        goToGameover = false
+                    },
+                    onHome: {
+                        goToGameover = false
+                        showGame = false
+                    }
+                )
             }
        // }
     }
@@ -317,9 +325,7 @@ struct ContentView: View {
 }
 
 
-#Preview("ContentView Reset Game") {
-    NavigationStack {
-        ContentView()
-    }
+#Preview {
+    ContentView(showGame: .constant(true))
 }
 

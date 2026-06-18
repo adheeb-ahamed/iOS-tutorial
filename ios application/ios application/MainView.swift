@@ -123,10 +123,10 @@ struct MainView: View {
                             
                         } //End of ZStack
                         .navigationDestination(isPresented: $startTapGame) {
-                            ContentView()
+                            ContentView(showGame: $startTapGame)
                         }
                         .navigationDestination(isPresented: $startLightItUpGame){
-                            BlinkGame()
+                            BlinkGame(showGame: $startLightItUpGame)
                         }
                         .padding(.bottom, 600)
                 
