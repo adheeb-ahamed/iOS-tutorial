@@ -92,21 +92,37 @@ struct BlinkGame: View {
                 .foregroundStyle(Color.blue)
                 .position(x: 360, y: 130)
             
+            Text ("Cards : \(cards.count)")
+                .position(x: 200, y: 200)
+            
             
             VStack{
                 LazyVGrid(columns : columns){
                     ForEach(cards) { card in
                         Button(action: {
+                            //ACTION HERE
+                            if card.isLit
+                            {
+                                scoreResult += 1
+                            }else{
+                                
+                                if scoreResult <= 2 {
+                                    scoreResult = 0
+                                }else{
+                                    scoreResult -= 3
+                                }
+                            }
                             
                         }) {
                             Rectangle()
                                 .fill(card.isLit ? Color.yellow : Color.blue)
-                                .frame (width: 115, height: 180)
+                                .frame (width: 115, height: 120)
                                 .cornerRadius(12)
+                                
                                 
                         }
                     }
-                }
+                } //Lazy grid
             }
             .position(x: 200, y: 400)
             
@@ -169,24 +185,23 @@ struct BlinkGame: View {
     func setupCards(for newLevel: Int){
         switch newLevel {
         case 1:
-            cards = Array(repeating: Card (isLit: false), count: 3)
+            cards = (0..<3).map{ _ in Card(isLit: false)}
             
         case 2:
-            cards = Array(repeating: Card (isLit: false), count: 4)
+            cards = (0..<4).map{ _ in Card(isLit: false)}
             
         case 3:
-            cards = Array(repeating: Card (isLit: false), count: 6)
+            cards = (0..<6).map{ _ in Card(isLit: false)}
             
         case 4:
-            cards = Array(repeating: Card (isLit: false), count: 9)
+            cards = (0..<9).map{ _ in Card(isLit: false)}
             
         default :
             break
         }
-        
-        
     }
 }
+
 #Preview {
     BlinkGame()
 }
