@@ -26,6 +26,14 @@ struct QuizView: View {
                 quizView
             case .error:
                 errorView
+            case .finished:
+                QuizResultView(
+                    score: vm.score,
+                    total: vm.questions.count
+                ) {
+                    vm.resetGame()
+                    vm.loadQuestions()
+                }
             }
         }
         .task { @MainActor in
@@ -82,7 +90,7 @@ struct QuizView: View {
             Text (vm.questions[vm.currentIndex].question)
                 .font(.title2)
                 .fontWeight(.bold)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
                 .padding()
                 .frame(maxWidth: .infinity)
                 .frame(height: 200) // Gives it that large box size

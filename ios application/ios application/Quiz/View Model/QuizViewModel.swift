@@ -13,6 +13,7 @@ enum ViewState {
     case loading
     case loaded
     case error
+    case finished
 }
 
 class QuizViewModel : ObservableObject {
