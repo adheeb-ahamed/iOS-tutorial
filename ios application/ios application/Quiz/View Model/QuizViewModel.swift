@@ -70,10 +70,12 @@ class QuizViewModel : ObservableObject {
     //This is go to next question
     func nextQuestion(){
         if currentIndex < questions.count - 1 {
-            currentIndex += 1
-        }else {
-            viewState = .loaded
-        }
+                currentIndex += 1
+                print("Current Index:", currentIndex)
+            } else {
+                print("Quiz Finished!")
+                viewState = .finished
+            }
     }
     
     func resetGame() {
@@ -83,6 +85,7 @@ class QuizViewModel : ObservableObject {
     }
 
 } //End of quiz model view
+
 
 
 
