@@ -14,6 +14,9 @@ struct MainView: View {
     //To go to Light it up game
     @State private var startLightItUpGame = false
     
+    //To go to Quiz Rush game
+    @State private var startQuizRush = false
+    
     
     
     var body: some View {
@@ -115,6 +118,50 @@ struct MainView: View {
                                 .font(.system(size: 20, weight: .semibold, design: .rounded))
                         })
                         .position(x: 200, y: 880)
+                        
+                        
+                        
+                        //3rd Image
+                        
+                        //Image with rounded rectangle
+                        Image("tapImage")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 350, height: 362)
+                            .clipShape(RoundedRectangle(cornerRadius: 15))
+                            .shadow(color: .black, radius: 0.5)
+                            .position(x: 200, y: 1180)
+                        
+                        Rectangle()
+                            .fill(Color.white)
+                            .frame(width: 300, height: 250)
+                            .cornerRadius(15)
+                            .shadow(color: .black, radius: 0.5)
+                            .position(x: 200, y: 1210)
+                        
+                        
+                        Text("Quiz \nRush")
+                            .font(.largeTitle)
+                            .padding()
+                            .bold(true)
+                            .position(x: 130, y: 1150)
+                        
+                        Text ("Select correct answer")
+                            .position(x: 164, y: 1195)
+                            .padding()
+                            .font(.system(size: 20, weight: .light, design: .rounded))
+                        
+                        Button(action: {
+                            startQuizRush = true
+                        }, label: {
+                            Text("Play")
+                                .frame(width: 250, height: 50)
+                                .background(Color.blue)
+                                .foregroundStyle(Color.white)
+                                .cornerRadius(15)
+                                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                        })
+                        .position(x: 200, y: 1280)
                             
           
                             Spacer()
@@ -128,7 +175,10 @@ struct MainView: View {
                         .navigationDestination(isPresented: $startLightItUpGame){
                             BlinkGame(showGame: $startLightItUpGame)
                         }
-                        .padding(.bottom, 600)
+                        .navigationDestination(isPresented: $startQuizRush){
+                            QuizView(showGame: $startQuizRush)
+                        }
+                        .padding(.bottom, 1000)
                 
             }//scrollable view
             

@@ -28,15 +28,26 @@ class QuizViewModel : ObservableObject {
     
     func loadQuestions() {
         self.viewState = .loading
+        print("loading started")
         
         Task {
             do {
                 let fetched = try await service.getQuestions()
-                self.questions = fetched
-                self.viewState = .loaded
+                print("Fetched questions", fetched.count)
+                
+                DispatchQueue.main.async {
+                    self.questions = fetched
+                    self.viewState = .loaded
+                    print("State changed to loaded")
+                }
+                
                 
             } catch {
-                self.viewState = .error
+                print("Error :", error)
+                
+                DispatchQueue.main.async {
+                    self.viewState = .error
+                }
             }
         }
     }
@@ -60,10 +71,17 @@ class QuizViewModel : ObservableObject {
         if currentIndex < questions.count - 1 {
             currentIndex += 1
         }else {
-            viewState = .error
+            viewState = .loaded
         }
+    }
+    
+    func resetGame() {
+        score = 0
+        currentIndex = 0
+        viewState = .loading
     }
 
 } //End of quiz model view
+
 
 
