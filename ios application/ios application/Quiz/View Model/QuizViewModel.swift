@@ -16,76 +16,88 @@ enum ViewState {
     case finished
 }
 
-class QuizViewModel : ObservableObject {
+class QuizViewModel: ObservableObject {
+
+    @Published var questions: [Question] = []
+    @Published var currentIndex: Int = 0
+    @Published var score: Int = 0
+    @Published var viewState: ViewState = .loading
+    @Published var selectedAnswer: String? = nil
+    @Published var showAnswerResult: Bool = false
     
-    @Published var questions : [Question] = []
-    @Published var currentIndex : Int = 0
-    @Published var score : Int = 0
-    @Published var viewState : ViewState = .loading
-    
-    
-    let service = QuizService()
 
     
+    private var hasloaded = false // This is just a guard to check if api is loaded properly
+
+    let service = QuizService()
+
     func loadQuestions() {
-        self.viewState = .loading
-        print("loading started")
+        if hasloaded { return }
+        hasloaded = true
         
+        viewState = .loading
+        print("loading started")
+
         Task {
             do {
                 let fetched = try await service.getQuestions()
                 print("Fetched questions", fetched.count)
-                
-                DispatchQueue.main.async {
-                    self.questions = fetched
-                    self.viewState = .loaded
-                    print("State changed to loaded")
+                print("Starting api request")
+
+                let decodedQuestions = fetched.map { question in
+                    Question(
+                        question: question.question.htmlDecoded,
+                        correct_answer: question.correct_answer.htmlDecoded,
+                        incorrect_answers: question.incorrect_answers.map { $0.htmlDecoded }
+                    )
                 }
-                
-                
+
+                await MainActor.run {
+                    self.questions = decodedQuestions
+                    self.viewState = .loaded
+                    print("API request finished")
+                }
             } catch {
-                print("Error :", error)
-                
-                DispatchQueue.main.async {
+                print("Error:", error)
+                await MainActor.run {
                     self.viewState = .error
                 }
             }
         }
     }
-    
-    
-    //To check if the selected answer is correct
-    func answer(_ selected : String){
-        
+
+    // To check if the selected answer is correct
+    func answer(_ selected: String) {
+        guard currentIndex < questions.count else { return }
         let correct = questions[currentIndex].correct_answer
-        
         if selected == correct {
             score += 1
         }
         
-        nextQuestion()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            self.nextQuestion( )
+            self.selectedAnswer = nil
+            self.showAnswerResult = false
+        }
     }
-    
-    
-    //This is go to next question
-    func nextQuestion(){
+
+    // This goes to the next question
+    func nextQuestion() {
         if currentIndex < questions.count - 1 {
-                currentIndex += 1
-                print("Current Index:", currentIndex)
-            } else {
-                print("Quiz Finished!")
-                viewState = .finished
-            }
+            currentIndex += 1
+            print("Current Index:", currentIndex)
+        } else {
+            print("Quiz Finished!")
+            viewState = .finished
+        }
     }
-    
+
     func resetGame() {
         score = 0
         currentIndex = 0
+        questions = []
         viewState = .loading
     }
+}
 
-} //End of quiz model view
-
-
-
-
+// End of QuizViewModel

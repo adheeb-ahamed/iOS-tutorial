@@ -36,7 +36,7 @@ struct QuizView: View {
                 }
             }
         }
-        .task { @MainActor in
+        .task {
             vm.loadQuestions()
         }
     }   //end of body
@@ -111,7 +111,7 @@ struct QuizView: View {
                             .frame(maxWidth: .infinity) // Makes button fill column width
                             .frame(height: 80)
                             .padding(.vertical, 20)      // Gives it that tall, thick look
-                            .background(Color(.systemGray4)) // Light gray background
+                            .background(color(for: option))
                             .cornerRadius(12)
                     }
                 }
@@ -128,6 +128,27 @@ struct QuizView: View {
         let current = vm.questions[vm.currentIndex]
         
         return (current.incorrect_answers + [current.correct_answer]).shuffled()
+        
+    }
+    
+    // Helper to determine background color for an answer option
+    func color(for option: String) -> Color {
+        // Default neutral background color for options
+        
+        guard vm.showAnswerResult else {
+            return .gray.opacity(0.25)
+        } //Default color is gray
+        
+        let correct = vm.questions[vm.currentIndex].correct_answer
+        let selectedAnswer = vm.selectedAnswer
+        
+        if option == correct {
+            return .green
+        }
+        if option == selectedAnswer && option != correct {
+            return .red
+        }
+        return .gray.opacity(0.25)
         
     }
 
