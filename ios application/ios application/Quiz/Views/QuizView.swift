@@ -93,14 +93,15 @@ struct QuizView: View {
                 .multilineTextAlignment(.leading)
                 .padding()
                 .frame(maxWidth: .infinity)
+                .foregroundStyle(Color(.white))
                 .frame(height: 200) // Gives it that large box size
-                .background(Color(.systemGray5)) // Light gray background
+                .background(Color(.blue.opacity(0.3))) // Light gray background
                 .cornerRadius(12) // Rounded corners
                 .padding(.horizontal)
             
             
             LazyVGrid(columns: columns, spacing : 16){
-                ForEach(answerOptions, id: \.self){ option in
+                ForEach(vm.answerOptions, id: \.self){ option in
                     Button(action: {
                         vm.answer(option)
                     }){
@@ -124,12 +125,6 @@ struct QuizView: View {
         }
     }
     
-    var answerOptions : [String] {
-        let current = vm.questions[vm.currentIndex]
-        
-        return (current.incorrect_answers + [current.correct_answer]).shuffled()
-        
-    }
     
     // Helper to determine background color for an answer option
     func color(for option: String) -> Color {

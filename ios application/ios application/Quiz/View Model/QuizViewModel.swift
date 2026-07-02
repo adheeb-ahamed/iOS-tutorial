@@ -24,7 +24,7 @@ class QuizViewModel: ObservableObject {
     @Published var viewState: ViewState = .loading
     @Published var selectedAnswer: String? = nil
     @Published var showAnswerResult: Bool = false
-    
+    @Published var answerOptions : [String] = []
 
     
     private var hasloaded = false // This is just a guard to check if api is loaded properly
@@ -54,6 +54,7 @@ class QuizViewModel: ObservableObject {
 
                 await MainActor.run {
                     self.questions = decodedQuestions
+                    self.loadAnswerOptions()
                     self.viewState = .loaded
                     print("API request finished")
                 }
@@ -68,8 +69,13 @@ class QuizViewModel: ObservableObject {
 
     // To check if the selected answer is correct
     func answer(_ selected: String) {
-        guard currentIndex < questions.count else { return }
+        guard !showAnswerResult else { return }
+        
+        selectedAnswer = selected
+        showAnswerResult = true
+        
         let correct = questions[currentIndex].correct_answer
+        
         if selected == correct {
             score += 1
         }
@@ -85,6 +91,7 @@ class QuizViewModel: ObservableObject {
     func nextQuestion() {
         if currentIndex < questions.count - 1 {
             currentIndex += 1
+            loadAnswerOptions()
             print("Current Index:", currentIndex)
         } else {
             print("Quiz Finished!")
@@ -97,6 +104,14 @@ class QuizViewModel: ObservableObject {
         currentIndex = 0
         questions = []
         viewState = .loading
+        hasloaded = false  
+    }
+    
+    //This I created because when you click the answer it shuffles when showing the answer so this function shuffles only once.
+    func loadAnswerOptions(){
+        let current = questions[currentIndex]
+        
+        answerOptions = (current.incorrect_answers + [current.correct_answer]).shuffled()
     }
 }
 
