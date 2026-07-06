@@ -10,6 +10,8 @@ struct QuizView: View {
     
     @StateObject var vm = QuizViewModel()
     
+    @State var locationManager = LocationManager()
+    
     @Binding var showGame: Bool
     
     let columns = [

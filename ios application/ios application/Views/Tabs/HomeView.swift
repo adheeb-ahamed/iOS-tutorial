@@ -17,6 +17,8 @@ struct MainView: View {
     //To go to Quiz Rush game
     @State private var startQuizRush = false
     
+    @State var locationManager = LocationManager()
+    
     
     
     var body: some View {
@@ -30,6 +32,12 @@ struct MainView: View {
                         Text("Ready to play")
                             .font(.system(size: 29, weight: .semibold, design: .rounded))
                             .position(x: 120, y: 120)
+                        
+//                        Text("Lat: \(locationManager.latitude)")
+//                            .position(x: 120, y: 90)
+//                        
+//                        
+//                        Text("Long: \(locationManager.longitude)")
                         
                 
                         Text ("Simple light minded games")
@@ -200,12 +208,11 @@ struct MainView: View {
         
         
         }//End of Navigation Stack
-        
-    }
-        
-        
-        
+        .onAppear {
+            locationManager.requestPermission()
+        }
     }//End of MainView
+}
 
 #Preview {
     MainView()

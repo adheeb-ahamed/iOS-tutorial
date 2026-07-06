@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct ios_applicationApp: App {
+    
+    @State var locationManager = LocationManager()
+    
+    
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                
         }
     }
 }
+

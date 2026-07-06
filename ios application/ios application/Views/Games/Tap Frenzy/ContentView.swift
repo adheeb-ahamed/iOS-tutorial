@@ -31,6 +31,9 @@ struct ContentView: View {
     
     @State private var game = 30 // CHANGE THISSSSS
     
+    //Get the location
+    @State var locationManager = LocationManager()
+    
     
     // To stop timer from running
     @State private var cancellable : Cancellable?
@@ -336,8 +339,8 @@ struct ContentView: View {
             mode: .tapFrenzy,
             score: count,
             timestamp: Date(),
-            latitude: 0.0,                    // MAKE SURE YOU CHANGE THIS LATER
-            longitude: 0.0                    // MAKE SURE YOU CHANGE THIS LATER
+            latitude: locationManager.latitude,
+            longitude: locationManager.longitude
         )
         GameSessionManager.shared.saveSessions(session)
     }

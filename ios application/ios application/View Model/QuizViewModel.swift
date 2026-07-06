@@ -16,7 +16,10 @@ enum ViewState {
     case finished
 }
 
+
+
 class QuizViewModel: ObservableObject {
+    private let locationManager = LocationManager()
 
     @Published var questions: [Question] = []
     @Published var currentIndex: Int = 0
@@ -120,11 +123,12 @@ class QuizViewModel: ObservableObject {
             mode: .quizRush,
             score: score,
             timestamp: Date(),
-            latitude: 0.0,                    // MAKE SURE YOU CHANGE THIS LATER
-            longitude: 0.0                    // MAKE SURE YOU CHANGE THIS LATER
+            latitude: locationManager.latitude,
+            longitude: locationManager.longitude
         )
         GameSessionManager.shared.saveSessions(session)
     }
 }
 
 // End of QuizViewModel
+

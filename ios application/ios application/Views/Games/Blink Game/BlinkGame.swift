@@ -14,6 +14,8 @@ struct BlinkGame: View {
     
     @State private var level : Int = 1
     
+    @State var locationManager = LocationManager()
+    
     //To create a timer
     @State private var timerLeft = 60                            //CHANGE THIS TESTING PURPOSE
     @State private var isTimerRunning = true
@@ -166,6 +168,9 @@ struct BlinkGame: View {
         }// End of Zstack
         //This to remove the tab bar from the blink game
         .toolbar(.hidden, for: .tabBar)
+        .onAppear {
+            locationManager.requestPermission()
+        }
         //this modifier explains the each passing second of timer
         .onReceive(timer) { _ in
             guard isTimerRunning && timerLeft > 0 else{
@@ -302,8 +307,8 @@ struct BlinkGame: View {
             mode: .lightItUp,
             score: scoreResult,
             timestamp: Date(),
-            latitude: 0.0,                    // MAKE SURE YOU CHANGE THIS LATER
-            longitude: 0.0                    // MAKE SURE YOU CHANGE THIS LATER
+            latitude: locationManager.latitude,
+            longitude: locationManager.longitude
         )
         GameSessionManager.shared.saveSessions(session)
     }
