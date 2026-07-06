@@ -95,7 +95,7 @@ struct QuizView: View {
                 .frame(maxWidth: .infinity)
                 .foregroundStyle(Color(.white))
                 .frame(height: 200) // Gives it that large box size
-                .background(Color(.blue.opacity(0.3))) // Light gray background
+                .background(Color(.blue.opacity(0.4))) // Light gray background
                 .cornerRadius(12) // Rounded corners
                 .padding(.horizontal)
             
