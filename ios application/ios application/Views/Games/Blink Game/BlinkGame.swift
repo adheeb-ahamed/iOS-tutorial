@@ -168,6 +168,7 @@ struct BlinkGame: View {
         }// End of Zstack
         //This to remove the tab bar from the blink game
         .toolbar(.hidden, for: .tabBar)
+        
         .onAppear {
             locationManager.requestPermission()
         }
