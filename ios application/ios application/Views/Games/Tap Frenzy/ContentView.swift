@@ -76,6 +76,9 @@ struct ContentView: View {
     
     
     
+    
+    
+    
     //Create an internal timer
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -190,6 +193,9 @@ struct ContentView: View {
                 }//End of VStack
                 
             } //End of ZStack
+        
+            //Remove the tab bar from the game
+            .toolbar(.hidden, for: .tabBar)
             
             
             
@@ -226,6 +232,7 @@ struct ContentView: View {
 //                    moveTarget()
                     
                     } else if timerLeft == 0 && !goToGameover {
+                        endGame()
                         goToGameover = true
                         isTimerRunning = false
                         if count > highScore{
@@ -321,6 +328,18 @@ struct ContentView: View {
         } catch {
             print("error playing sound : \(error)")
         }
+    }
+    
+    
+    func endGame(){
+        let session = GameSessionModel(
+            mode: .tapFrenzy,
+            score: count,
+            timestamp: Date(),
+            latitude: 0.0,                    // MAKE SURE YOU CHANGE THIS LATER
+            longitude: 0.0                    // MAKE SURE YOU CHANGE THIS LATER
+        )
+        GameSessionManager.shared.saveSessions(session)
     }
 }
 

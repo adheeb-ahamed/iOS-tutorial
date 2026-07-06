@@ -75,6 +75,9 @@ struct BlinkGame: View {
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     
+    //To save the score in GameSessionMode
+    
+    
     var body: some View {
         
         ZStack{
@@ -161,11 +164,14 @@ struct BlinkGame: View {
             
             
         }// End of Zstack
+        //This to remove the tab bar from the blink game
+        .toolbar(.hidden, for: .tabBar)
         //this modifier explains the each passing second of timer
         .onReceive(timer) { _ in
             guard isTimerRunning && timerLeft > 0 else{
                 if timerLeft == 0{
                     isTimerRunning = false
+                    endGame()
                     stopTimer()
                     
                     if scoreResult > highScore{
@@ -290,7 +296,20 @@ struct BlinkGame: View {
             }
         }
     }
+    
+    func endGame(){
+        let session = GameSessionModel(
+            mode: .lightItUp,
+            score: scoreResult,
+            timestamp: Date(),
+            latitude: 0.0,                    // MAKE SURE YOU CHANGE THIS LATER
+            longitude: 0.0                    // MAKE SURE YOU CHANGE THIS LATER
+        )
+        GameSessionManager.shared.saveSessions(session)
+    }
+    
 }
+
 
 #Preview {
     BlinkGame(showGame: .constant(true))

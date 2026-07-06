@@ -24,7 +24,7 @@ struct MainTabView: View {
             
             
             NavigationStack{
-                StatView()
+                StatsView()
             }
             .tabItem {
                 Label("Stats", systemImage: "chart.bar.fill")

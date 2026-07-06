@@ -1,3 +1,4 @@
+// ----------------------------------------------------------
 //THIS IS FOR PROVIDING EACH GAME PLAY A SPECIFIC IDENTIFIABLE ID.
 
 
@@ -5,9 +6,9 @@ import Foundation
 
 //Represents the different types of app we are using the gameSession for
 enum GameMode: String, Codable {
-    case tapFrenzy
-    case lightItUp
-    case quizRush
+    case tapFrenzy = "Tap Frenzy"
+    case lightItUp = "Light it up"
+    case quizRush = "Quiz Rush"
 }
 
 struct GameSessionModel: Codable, Identifiable {

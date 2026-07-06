@@ -39,6 +39,8 @@ struct QuizView: View {
         .task {
             vm.loadQuestions()
         }
+        //Remove the tab bar from the quiz game 
+        .toolbar(.hidden, for: .tabBar)
     }   //end of body
     
     //------------------------------------------------

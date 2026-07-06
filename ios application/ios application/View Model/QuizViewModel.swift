@@ -95,6 +95,7 @@ class QuizViewModel: ObservableObject {
             print("Current Index:", currentIndex)
         } else {
             print("Quiz Finished!")
+            endGame()
             viewState = .finished
         }
     }
@@ -112,6 +113,17 @@ class QuizViewModel: ObservableObject {
         let current = questions[currentIndex]
         
         answerOptions = (current.incorrect_answers + [current.correct_answer]).shuffled()
+    }
+    
+    func endGame(){
+        let session = GameSessionModel(
+            mode: .quizRush,
+            score: score,
+            timestamp: Date(),
+            latitude: 0.0,                    // MAKE SURE YOU CHANGE THIS LATER
+            longitude: 0.0                    // MAKE SURE YOU CHANGE THIS LATER
+        )
+        GameSessionManager.shared.saveSessions(session)
     }
 }
 
