@@ -47,7 +47,7 @@ struct StatsView: View {
                                 
                 
                 
-                ForEach(manager.sessions) { session in
+                ForEach(manager.sessions.sorted { $0.timestamp > $1.timestamp }) { session in
                     
                     VStack(alignment: .leading) {
                         
@@ -98,7 +98,7 @@ extension StatsView {
                             
                         )
                     )
-                    .foregroundStyle(item.mode.color)
+                    .foregroundStyle(item.mode.color.opacity(0.85))
             }
             .frame(height: 250)
             
