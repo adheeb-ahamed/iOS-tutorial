@@ -16,6 +16,8 @@ struct BlinkGame: View {
     
     @State var locationManager = LocationManager.shared
     
+    @State private var hasEndedGame = false
+    
     //To create a timer
     @State private var timerLeft = 60                            //CHANGE THIS TESTING PURPOSE
     @State private var isTimerRunning = true
@@ -304,6 +306,12 @@ struct BlinkGame: View {
     }
     
     func endGame(){
+        
+        guard !hasEndedGame else {
+                return
+            }
+
+        hasEndedGame = true
         
         let session = GameSessionModel(
             mode: .lightItUp,

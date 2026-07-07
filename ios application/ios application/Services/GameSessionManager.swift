@@ -55,6 +55,10 @@ class GameSessionManager : ObservableObject {
         }
     }
     
+//    func addSession(_ session: GameSessionModel) {
+//            sessions.append(session)
+//    }
+    
     
     
 

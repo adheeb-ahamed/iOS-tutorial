@@ -63,25 +63,24 @@ struct MapView: View {
             }
         }
         .sheet(item: $selectedLocation) { location in
-            // Wrap multiple views in a container to satisfy ViewBuilder and ForEach requirements
+            
             ScrollView {
+                
                 VStack(alignment: .leading, spacing: 12) {
+                    
                     Text("Game History")
                         .font(.title)
                         .padding(.bottom, 4)
                     
-                    ForEach(location.sessions) { session in
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text(session.mode.rawValue)
-                                .font(.headline)
-                                .foregroundStyle(session.mode.color)
-                            Text("Score: \(session.score)")
-                            Text(session.timestamp.formatted())
-                        }
-                        .frame(maxWidth : .infinity, alignment : .leading)
-                        .padding()
-                        .background(session.mode.color.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
+                    ForEach(location.sessions.sorted { $0.timestamp > $1.timestamp }) { session in
+                        
+                        SessionCard(session: session)
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                            .background(session.mode.color.opacity(0.15))
+                            
                     }
                 }
                 .padding()
@@ -89,3 +88,4 @@ struct MapView: View {
         }
     }
 }
+

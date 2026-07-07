@@ -24,7 +24,7 @@ struct MainTabView: View {
             
             
             NavigationStack{
-                StatsView()
+                StatsView(manager: GameSessionManager.shared)
             }
             .tabItem {
                 Label("Stats", systemImage: "chart.bar.fill")
