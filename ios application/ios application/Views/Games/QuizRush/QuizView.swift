@@ -10,7 +10,7 @@ struct QuizView: View {
     
     @StateObject var vm = QuizViewModel()
     
-    @State var locationManager = LocationManager()
+    @State var locationManager = LocationManager.shared
     
     @Binding var showGame: Bool
     

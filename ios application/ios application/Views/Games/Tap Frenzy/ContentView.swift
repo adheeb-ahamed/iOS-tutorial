@@ -32,7 +32,7 @@ struct ContentView: View {
     @State private var game = 30 // CHANGE THISSSSS
     
     //Get the location
-    @State var locationManager = LocationManager()
+    @State var locationManager = LocationManager.shared
     
     
     // To stop timer from running
@@ -339,6 +339,23 @@ struct ContentView: View {
             mode: .tapFrenzy,
             score: count,
             timestamp: Date(),
+            latitude: locationManager.latitude,
+            longitude: locationManager.longitude
+        )
+        GameSessionManager.shared.saveSessions(session)
+    }
+    
+    
+    //To save each and every game that are completed
+    
+    func finishGame(){
+        
+        let session = GameSessionModel(
+            
+            id: UUID(),
+            mode: .tapFrenzy,
+            score : count,
+            timestamp:Date(),
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )

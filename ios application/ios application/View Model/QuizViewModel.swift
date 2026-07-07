@@ -19,7 +19,7 @@ enum ViewState {
 
 
 class QuizViewModel: ObservableObject {
-    private let locationManager = LocationManager()
+    private let locationManager = LocationManager.shared
 
     @Published var questions: [Question] = []
     @Published var currentIndex: Int = 0
@@ -119,10 +119,26 @@ class QuizViewModel: ObservableObject {
     }
     
     func endGame(){
+        print("Saving location:", locationManager.latitude, locationManager.longitude)
+        
         let session = GameSessionModel(
             mode: .quizRush,
             score: score,
             timestamp: Date(),
+            latitude: locationManager.latitude,
+            longitude: locationManager.longitude
+        )
+        GameSessionManager.shared.saveSessions(session)
+    }
+    
+    func finishGame(){
+        
+        let session = GameSessionModel(
+            
+            id: UUID(),
+            mode: .tapFrenzy,
+            score : score,
+            timestamp:Date(),
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )

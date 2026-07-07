@@ -16,6 +16,8 @@ import Combine
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     
+    static let shared = LocationManager()
+    
     private let manager =  CLLocationManager()
     
     
@@ -39,8 +41,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         latitude = location.coordinate.latitude
         longitude = location.coordinate.longitude
+        
+        print("Current location:", latitude, longitude)
     }
     
 }
+
 
     

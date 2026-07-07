@@ -17,7 +17,7 @@ struct MainView: View {
     //To go to Quiz Rush game
     @State private var startQuizRush = false
     
-    @State var locationManager = LocationManager()
+    @State var locationManager = LocationManager.shared
     
     
     

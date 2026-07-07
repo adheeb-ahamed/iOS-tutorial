@@ -14,7 +14,7 @@ struct BlinkGame: View {
     
     @State private var level : Int = 1
     
-    @State var locationManager = LocationManager()
+    @State var locationManager = LocationManager.shared
     
     //To create a timer
     @State private var timerLeft = 60                            //CHANGE THIS TESTING PURPOSE
@@ -304,10 +304,25 @@ struct BlinkGame: View {
     }
     
     func endGame(){
+        
         let session = GameSessionModel(
             mode: .lightItUp,
             score: scoreResult,
             timestamp: Date(),
+            latitude: locationManager.latitude,
+            longitude: locationManager.longitude
+        )
+        GameSessionManager.shared.saveSessions(session)
+    }
+    
+    func finishGame(){
+        
+        let session = GameSessionModel(
+            
+            id: UUID(),
+            mode: .tapFrenzy,
+            score : scoreResult,
+            timestamp:Date(),
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )

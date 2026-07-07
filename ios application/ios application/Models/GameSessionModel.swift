@@ -3,13 +3,30 @@
 
 
 import Foundation
+import SwiftUI
 
 //Represents the different types of app we are using the gameSession for
 enum GameMode: String, Codable {
     case tapFrenzy = "Tap Frenzy"
     case lightItUp = "Light it up"
     case quizRush = "Quiz Rush"
+    
+    
+    //To differenciate the color for each pin I'm doing this
+    var color : Color {
+        switch self {
+        case .tapFrenzy:
+            return .red
+        case .lightItUp:
+            return .blue
+        case .quizRush:
+            return .yellow
+        }
+    }
 }
+
+
+
 
 struct GameSessionModel: Codable, Identifiable {
     
