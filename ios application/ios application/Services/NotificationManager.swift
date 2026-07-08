@@ -6,6 +6,7 @@
 //
 
 import UserNotifications
+import Foundation
 
 
 class NotificationManager {
@@ -19,10 +20,57 @@ class NotificationManager {
                 
                 if granted {
                     print("Permission granted")
-                }else {
+                }
+                else{
                     print("Permission not granted")
                 }
             }
         
+    } //End of request function
+    
+    
+    func scheduleDailyReminder(hour : Int, minute : Int) {
+        
+        let content  = UNMutableNotificationContent()
+        
+        content .title = "Daily Reminder"
+        content .body = "Your daily challenge is ready."
+        content .sound = .default
+        
+        var date = DateComponents()
+        
+        date.hour = hour
+        date.minute = minute
+        
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: date,
+            repeats: true
+        )
+        
+        let request = UNNotificationRequest(
+            identifier: "dailyChallengeReminder",
+            content: content,
+            trigger: trigger
+        )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Notification error : \(error.localizedDescription)")
+            } else {
+                print("Daily reminder scheduled")
+            }
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
     }
+    
 }
+
+

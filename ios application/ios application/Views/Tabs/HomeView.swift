@@ -19,6 +19,8 @@ struct MainView: View {
     
     @State var locationManager = LocationManager.shared
     
+    @StateObject private var challengeManager = DailyChallengeManager()
+    
     
     
     var body: some View {
@@ -210,6 +212,42 @@ struct MainView: View {
         }//End of Navigation Stack
         .onAppear {
             locationManager.requestPermission()
+            challengeManager.checkChallenge()
+        }
+        
+        if let challenge = challengeManager.todaysChallenge {
+            
+            VStack(alignment: .leading, spacing: 12) {
+                
+                Text("🔥 Daily Challenge")
+                    .font(.title2)
+                    .bold()
+                
+                Text(challenge.title)
+                    .font(.headline)
+                
+                Text(challenge.description)
+                    .font(.subheadline)
+                
+                Button {
+                    // Temporary completion button
+                    // Later replace this with automatic game completion
+                    challengeManager.completeChallenge()
+                    
+                } label: {
+                    Text("Complete Challenge")
+                        .frame(width: 250, height: 45)
+                        .background(Color.green)
+                        .foregroundStyle(.white)
+                        .cornerRadius(15)
+                }
+            }
+            .padding()
+            .frame(width: 350, height: 200)
+            .background(Color.white)
+            .cornerRadius(20)
+            .shadow(color: .black.opacity(0.2), radius: 5)
+            .position(x: 200, y: 300)
         }
     }//End of MainView
 }
