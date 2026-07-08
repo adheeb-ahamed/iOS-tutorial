@@ -225,6 +225,7 @@ struct BlinkGame: View {
             .navigationDestination(isPresented: $goToGameover) {
                 GameOverView(
                     score: scoreResult,
+                    gameMode: .lightItUp,
                     onRestart: {
                         resetGame()
                         goToGameover = false

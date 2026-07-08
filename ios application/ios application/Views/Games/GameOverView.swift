@@ -9,11 +9,24 @@ import SwiftUI
 
 struct GameOverView: View {
     var score: Int
+    var gameMode: GameMode
     var onRestart: () -> Void //the moment you click restart it becomes zero
     var onHome: () -> Void
     
+    
+    
+    
     //Dismiss the current screen
     @Environment(\.dismiss) private var dismiss
+    
+    
+    var shareText: String  {
+        """
+        I scored \(score) points in \(gameMode.rawValue)!
+        
+        Can you beat my score?
+        """
+    }
     
     
     var body: some View {
@@ -55,6 +68,18 @@ struct GameOverView: View {
                 }
                 .contentShape(Circle())
                 .padding()
+                
+                
+                ShareLink(item: shareText) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                }
+                
+                
             }
             .padding()
             
@@ -63,5 +88,16 @@ struct GameOverView: View {
     }
 }
 
-
+#Preview {
+    GameOverView(
+        score: 100,
+        gameMode: .tapFrenzy,
+        onRestart: {
+            print("Restart clicked")
+        },
+        onHome: {
+            print("Home clicked")
+        }
+    )
+}
 

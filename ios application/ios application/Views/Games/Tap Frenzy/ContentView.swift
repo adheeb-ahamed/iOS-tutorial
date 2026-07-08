@@ -249,6 +249,7 @@ struct ContentView: View {
             .navigationDestination(isPresented: $goToGameover) {
                 GameOverView(
                     score: count,
+                    gameMode : .tapFrenzy,
                     onRestart: {
                         resetGame()
                         goToGameover = false
