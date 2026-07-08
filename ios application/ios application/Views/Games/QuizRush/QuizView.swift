@@ -31,6 +31,7 @@ struct QuizView: View {
             case .finished:
                 QuizResultView(
                     score: vm.score,
+                    gameMode: .quizRush,
                     total: vm.questions.count
                 ) {
                     vm.resetGame()

@@ -10,8 +10,18 @@ import SwiftUI
 struct QuizResultView: View {
 
     let score: Int
+    var gameMode: GameMode
     let total: Int
     let restartAction: () -> Void
+    
+    
+    var shareText: String  {
+        """
+        I scored \(score) points in \(gameMode.rawValue)!
+        
+        Can you beat my score?
+        """
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -34,6 +44,16 @@ struct QuizResultView: View {
             .background(.blue)
             .foregroundColor(.white)
             .cornerRadius(10)
+            
+            
+            ShareLink(item: shareText) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.title2)
+                    .foregroundStyle(.white)
+                    .padding()
+                    .background(Color.blue)
+                    .clipShape(Circle())
+            }
         }
     }
 
