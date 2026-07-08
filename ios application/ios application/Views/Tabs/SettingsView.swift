@@ -7,10 +7,23 @@
 
 import SwiftUI
 
+
 struct SettingsView: View {
     var body: some View {
         
         Text("Settings")
+            .padding(20)
+    
+        
+        Button("Enable Notifications") {
+
+            NotificationManager.shared.requestPermission()
+
+        }
         
     }
+}
+
+#Preview {
+    SettingsView()
 }
