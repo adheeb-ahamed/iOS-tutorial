@@ -291,7 +291,7 @@ The application contains the following primary screens:
 1. Clone the repository.
 
 ```bash
-git clone <repository-url>
+git clone git@github.com:adheeb-ahamed/iOS-tutorial.git>
 ```
 
 2. Open the project in Xcode.
