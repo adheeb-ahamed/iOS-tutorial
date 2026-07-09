@@ -55,6 +55,11 @@ class GameSessionManager : ObservableObject {
         }
     }
     
+    func clearSessions() {
+        sessions.removeAll()
+        UserDefaults.standard.removeObject(forKey: key)
+    }
+    
 //    func addSession(_ session: GameSessionModel) {
 //            sessions.append(session)
 //    }
