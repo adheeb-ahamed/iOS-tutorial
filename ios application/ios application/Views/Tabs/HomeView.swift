@@ -24,232 +24,86 @@ struct MainView: View {
     
     
     var body: some View {
-    NavigationStack {
-        ZStack{
-            
-            ScrollView{
-                    ZStack{
-                        
-                        //Ready to play
-                        Text("Ready to play")
-                            .font(.system(size: 29, weight: .semibold, design: .rounded))
-                            .position(x: 120, y: 120)
-                        
-//                        Text("Lat: \(locationManager.latitude)")
-//                            .position(x: 120, y: 90)
-//                        
-//                        
-//                        Text("Long: \(locationManager.longitude)")
-                        
+        NavigationStack {
+            ZStack {
+                // Dynamic Game Hub Themed Background
+                Color(uiColor: .systemGroupedBackground) // Or use a tiled background Image asset
+                    .ignoresSafeArea()
                 
-                        Text ("Simple light minded games")
-                            .font(.system(size: 20, weight: .light, design: .rounded))
-                            .position(x: 145, y: 155)
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 20) {
                         
-                        //Image with rounded rectangle
-                        Image("tapImage")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 350, height: 362)
-                            .clipShape(RoundedRectangle(cornerRadius: 15))
-                            .shadow(color: .black, radius: 0.5)
-                            .position(x: 200, y: 380)
-                        
-                        Rectangle()
-                            .fill(Color.white)
-                            .frame(width: 300, height: 250)
-                            .cornerRadius(15)
-                            .shadow(color: .black, radius: 0.5)
-                            .position(x: 200, y: 410)
-                        
-                        
-                        Text("Tap \nFrenzy")
-                            .font(.largeTitle)
-                            .padding()
-                            .bold(true)
-                            .position(x: 130, y: 350)
-                        
-                        Text ("Tap the button and score")
-                            .position(x: 164, y: 395)
-                            .padding()
-                            .font(.system(size: 20, weight: .light, design: .rounded))
-                        
-                        Button(action: {
-                            startTapGame = true
-                        }, label: {
-                            Text("Play")
-                                .frame(width: 250, height: 50)
-                                .background(Color.blue)
-                                .foregroundStyle(Color.white)
-                                .cornerRadius(15)
-                                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        })
-                        .position(x: 200, y: 480)
-                        
-                        
-                        //2ND GAME
-                        //Image with rounded rectangle
-                        Image("lightImage")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 350, height: 362)
-                            .clipShape(RoundedRectangle(cornerRadius: 15))
-                            .shadow(color: .black, radius: 0.5)
-                            .position(x: 200, y: 780)
+                        // Header Title Section
+                        VStack(spacing: 4) {
+                            Text("Velocity Game Hub")
+                                .font(.system(.largeTitle, design: .rounded))
+                                .fontWeight(.black)
+                                .foregroundColor(.primary)
                             
+                            Text("Simple light minded games")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.top, 20)
+                        .padding(.bottom, 10)
                         
-                        Rectangle()
-                            .fill(Color.white)
-                            .frame(width: 300, height: 250)
-                            .cornerRadius(15)
-                            .shadow(color: .black, radius: 0.5)
-                            .position(x: 200, y: 810)
+                        // Dynamic Daily Challenge banner injection if active
+                        if let challenge = challengeManager.todaysChallenge {
+                            DailyChallengeBanner(challenge: challenge, manager: challengeManager)
+                                .padding(.horizontal)
+                        }
                         
-                        
-                        Text("Light it \nup")
-                            .font(.largeTitle)
-                            .padding()
-                            .bold(true)
-                            .position(x: 130, y: 750)
-                        
-                        Text ("Light the button before it dims")
-                            .position(x: 183, y: 795)
-                            .padding()
-                            .font(.system(size: 20, weight: .light, design: .rounded))
-                        
-                        Button(action: {
-                            startLightItUpGame = true
-                        }, label: {
-                            Text("Play")
-                                .frame(width: 250, height: 50)
-                                .background(Color.blue)
-                                .foregroundStyle(Color.white)
-                                .cornerRadius(15)
-                                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        })
-                        .position(x: 200, y: 880)
-                        
-                        
-                        
-                        //3rd Image
-                        
-                        //Image with rounded rectangle
-                        Image("tapImage")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 350, height: 362)
-                            .clipShape(RoundedRectangle(cornerRadius: 15))
-                            .shadow(color: .black, radius: 0.5)
-                            .position(x: 200, y: 1180)
-                        
-                        Rectangle()
-                            .fill(Color.white)
-                            .frame(width: 300, height: 250)
-                            .cornerRadius(15)
-                            .shadow(color: .black, radius: 0.5)
-                            .position(x: 200, y: 1210)
-                        
-                        
-                        Text("Quiz \nRush")
-                            .font(.largeTitle)
-                            .padding()
-                            .bold(true)
-                            .position(x: 130, y: 1150)
-                        
-                        Text ("Select correct answer")
-                            .position(x: 164, y: 1195)
-                            .padding()
-                            .font(.system(size: 20, weight: .light, design: .rounded))
-                        
-                        Button(action: {
-                            startQuizRush = true
-                        }, label: {
-                            Text("Play")
-                                .frame(width: 250, height: 50)
-                                .background(Color.blue)
-                                .foregroundStyle(Color.white)
-                                .cornerRadius(15)
-                                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                        })
-                        .position(x: 200, y: 1280)
+                        // Main Scrollable List of Game Cards
+                        LazyVStack(spacing: 18) {
+                            GameCardView(
+                                title: "Tap Frenzy",
+                                subtitle: "Tap the button & score!",
+                                backgroundImageName: "tapImage"
+                            ) {
+                                print("Tap Frenzy tapped!")
+                                startTapGame = true
+                            }
                             
-          
-                            Spacer()
-                        
-
+                            GameCardView(
+                                title: "Light It Up",
+                                subtitle: "Light the button before it dims",
+                                backgroundImageName: "lightImage"
+                            ) {
+                                print("Light It Up tapped!")
+                                startLightItUpGame = true
+                            }
                             
-                        } //End of ZStack
-                        .navigationDestination(isPresented: $startTapGame) {
-                            ContentView(showGame: $startTapGame)
+                            GameCardView(
+                                title: "Quiz Rush",
+                                subtitle: "Answer fast, earn big points!",
+                                backgroundImageName: "tapImage" // Bind your asset here
+                            ) {
+                                print("Quiz Rush tapped!")
+                                startQuizRush = true
+                            }
                         }
-                        .navigationDestination(isPresented: $startLightItUpGame){
-                            BlinkGame(showGame: $startLightItUpGame)
-                        }
-                        .navigationDestination(isPresented: $startQuizRush){
-                            QuizView(showGame: $startQuizRush)
-                        }
-                        .padding(.bottom, 1000)
-                
-            }//scrollable view
-            
-            //Top rectangle with the title
-            Rectangle()
-                .fill(Color.white)
-                .frame(width: 410, height: 150)
-                .shadow(color: .black, radius: 0.5)
-                .position(x: 200, y: 0)
-            
-            //Title
-            Text("Velocity")
-                .font(.largeTitle)
-                .foregroundColor(Color.blue)
-                .padding()
-                .bold(true)
-                .position(x: 200, y: 30)
-        }
-        
-        
-        }//End of Navigation Stack
-        .onAppear {
-            locationManager.requestPermission()
-            challengeManager.checkChallenge()
-        }
-        
-        if let challenge = challengeManager.todaysChallenge {
-            
-            VStack(alignment: .leading, spacing: 12) {
-                
-                Text("🔥 Daily Challenge")
-                    .font(.title2)
-                    .bold()
-                
-                Text(challenge.title)
-                    .font(.headline)
-                
-                Text(challenge.description)
-                    .font(.subheadline)
-                
-                Button {
-                    // Temporary completion button
-                    // Later replace this with automatic game completion
-                    challengeManager.completeChallenge()
-                    
-                } label: {
-                    Text("Complete Challenge")
-                        .frame(width: 250, height: 45)
-                        .background(Color.green)
-                        .foregroundStyle(.white)
-                        .cornerRadius(15)
+                        .padding(.horizontal)
+                        
+                        // Padding cushion to prevent cards getting hidden by your custom Navigation/Tab Bars
+                        Spacer(minLength: 100)
+                    }
                 }
             }
-            .padding()
-            .frame(width: 350, height: 200)
-            .background(Color.white)
-            .cornerRadius(20)
-            .shadow(color: .black.opacity(0.2), radius: 5)
-            .position(x: 200, y: 300)
+            .navigationDestination(isPresented: $startTapGame) {
+                ContentView(showGame: $startTapGame)
+            }
+            .navigationDestination(isPresented: $startLightItUpGame) {
+                BlinkGame(showGame: $startLightItUpGame)
+            }
+            .navigationDestination(isPresented: $startQuizRush) {
+                QuizView(showGame: $startQuizRush)
+            }
+            .onAppear {
+                locationManager.requestPermission()
+                challengeManager.checkChallenge()
+            }
         }
-    }//End of MainView
+    }
 }
 
 #Preview {

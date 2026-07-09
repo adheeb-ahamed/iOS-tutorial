@@ -17,7 +17,7 @@ struct SettingsView: View {
         
         NavigationStack {
             
-            Form {
+            Form {	
                 
                 Section {
                     
