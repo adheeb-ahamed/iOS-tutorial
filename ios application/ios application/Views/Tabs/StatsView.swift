@@ -21,52 +21,60 @@ struct StatsView: View {
         
         ScrollView {
             
-            VStack (spacing : 20){
-                
-                Text ("Game Statistics")
-                    .font(Font.largeTitle.bold())
-
-                HStack {
-                                    
-                                    MetricCard(
-                                        title:"Total Games",
-                                        value:"\(vm.totalGames)"
-                                    )
-                                    
-                                    MetricCard(
-                                        title:"Highest Score",
-                                        value:"\(vm.highestScore)"
-                                    )
-                }
-                .padding()
+            ZStack{
+                Color(uiColor: .systemGroupedBackground) // Or use a tiled background Image asset
+                .ignoresSafeArea()
                 
                 
-                chartSection
-                    .padding()
-                                
-                                
-                
-                
-                ForEach(manager.sessions.sorted { $0.timestamp > $1.timestamp }) { session in
+                VStack (spacing : 20){
                     
-                    VStack(alignment: .leading) {
+                    Text ("Game Statistics")
+                        .font(Font.largeTitle.bold())
+
+                    HStack {
+                                        
+                        MetricCard(
+                            title:"Total Games",
+                            value:"\(vm.totalGames)"
+                        )
                         
-                        SessionCard(session: session)
-                                .padding(.horizontal)
-                        
+                        MetricCard(
+                            title:"Highest Score",
+                            value:"\(vm.highestScore)"
+                        )
                     }
                     .padding()
-                } //end of For Each
-                
-                
+                    
+                    
+                    chartSection
+                        .padding()
+                                    
+                                    
+                    
+                    
+                    ForEach(manager.sessions.sorted { $0.timestamp > $1.timestamp }) { session in
+                        
+                        VStack(alignment: .leading) {
+                            
+                            SessionCard(session: session)
+                                    .padding(.horizontal)
+                            
+                        }
+                        .padding()
+                    } //end of For Each
+                    
+                    
+                    
+                }
                 
             }
+            .onAppear{
+                print("Stats loaded:", manager.sessions.count)
+                vm.calculateStats(from: manager.sessions)
+            }
+            }
             
-        }
-        .onAppear{
-            print("Stats loaded:", manager.sessions.count)
-            vm.calculateStats(from: manager.sessions)
-        }
+            
         
         
     } //End of body
