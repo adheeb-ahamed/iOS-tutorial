@@ -16,40 +16,58 @@ struct SettingsView: View {
     @AppStorage("challengeMinute") private var challengeMinute = 0
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 20) {
-                headerSection
+        
+        ZStack{
+            
+            LinearGradient(
+                    colors: [
+                        
+                        Color.blue.opacity(0.7),
+                        Color.white.opacity(0),
+                        Color.cyan.opacity(0.4)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 20) {
+                    headerSection
 
-                notificationsCard
+                    notificationsCard
 
-                dailyChallengeCard
+                    dailyChallengeCard
 
-                dangerZoneCard
+                    dangerZoneCard
 
-                Spacer(minLength: 40)
+                    Spacer(minLength: 40)
+                }
+                .padding(.top, 8)
+                .padding(.horizontal)
             }
-            .padding(.top, 8)
-            .padding(.horizontal)
-        }
-        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            reminderTime = Calendar.current.date(
-                bySettingHour: challengeHour,
-                minute: challengeMinute,
-                second: 0,
-                of: Date()
-            ) ?? Date()
-        }
-        .alert("Are you sure?", isPresented: $showingEraseAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Erase Everything", role: .destructive) {
-                eraseAllData()
+//            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                reminderTime = Calendar.current.date(
+                    bySettingHour: challengeHour,
+                    minute: challengeMinute,
+                    second: 0,
+                    of: Date()
+                ) ?? Date()
             }
-        } message: {
-            Text("This will permanently delete all your game stats, high scores, and reset your settings. This action cannot be undone.")
+            .alert("Are you sure?", isPresented: $showingEraseAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Erase Everything", role: .destructive) {
+                    eraseAllData()
+                }
+            } message: {
+                Text("This will permanently delete all your game stats, high scores, and reset your settings. This action cannot be undone.")
+            }
         }
+        
+        
     }
 
     private var headerSection: some View {

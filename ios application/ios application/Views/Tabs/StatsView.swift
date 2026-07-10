@@ -15,42 +15,60 @@ struct StatsView: View {
     @ObservedObject var manager: GameSessionManager
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 20) {
-                headerSection
+        
+        ZStack{
+            
+            LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.2),
+                        Color.blue.opacity(0.7),
+                        Color.cyan.opacity(0.4)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 20) {
+                    headerSection
 
-                HStack(spacing: 14) {
-                    MetricCard(
-                        title: "Total Games",
-                        value: "\(vm.totalGames)"
-                    )
+                    HStack(spacing: 14) {
+                        MetricCard(
+                            title: "Total Games",
+                            value: "\(vm.totalGames)"
+                        )
 
-                    MetricCard(
-                        title: "Highest Score",
-                        value: "\(vm.highestScore)"
-                    )
-                }
-                .padding(.horizontal)
-
-                chartSection
+                        MetricCard(
+                            title: "Highest Score",
+                            value: "\(vm.highestScore)"
+                        )
+                    }
                     .padding(.horizontal)
 
-                if manager.sessions.isEmpty {
-                    emptyStateCard
+                    chartSection
                         .padding(.horizontal)
-                } else {
-                    recentSessionsSection
-                }
 
-                Spacer(minLength: 40)
+                    if manager.sessions.isEmpty {
+                        emptyStateCard
+                            .padding(.horizontal)
+                    } else {
+                        recentSessionsSection
+                    }
+
+                    Spacer(minLength: 40)
+                }
+                .padding(.top, 8)
             }
-            .padding(.top, 8)
+//            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+            .onAppear {
+                print("Stats loaded:", manager.sessions.count)
+                vm.calculateStats(from: manager.sessions)
+            }
+            
         }
-        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-        .onAppear {
-            print("Stats loaded:", manager.sessions.count)
-            vm.calculateStats(from: manager.sessions)
-        }
+        
+        
     }
 
     private var headerSection: some View {
@@ -223,3 +241,7 @@ struct SessionCard: View {
         }
     }
 }
+
+//#Preview {
+//    StatsView(manager: GameSessionManager)
+//}

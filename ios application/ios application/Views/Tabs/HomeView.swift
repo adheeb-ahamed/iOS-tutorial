@@ -27,7 +27,18 @@ struct MainView: View {
         NavigationStack {
             ZStack {
                 // Dynamic Game Hub Themed Background
-                Color(uiColor: .systemGroupedBackground) // Or use a tiled background Image asset
+//                Color(uiColor: .systemGroupedBackground) // Or use a tiled background Image asset
+//                    .ignoresSafeArea()
+                
+                LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.2),
+                            Color.blue.opacity(0.7),
+                            Color.cyan.opacity(0.4)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                     .ignoresSafeArea()
                 
                 ScrollView(.vertical, showsIndicators: false) {
@@ -67,7 +78,7 @@ struct MainView: View {
                             GameCardView(
                                 title: "Tap Frenzy",
                                 subtitle: "Tap the button & score!",
-                                backgroundImageName: "tapImage"
+                                backgroundImageName: "TapFrenzy"
                             ) {
                                 print("Tap Frenzy tapped!")
                                 startTapGame = true
@@ -85,14 +96,13 @@ struct MainView: View {
                             GameCardView(
                                 title: "Quiz Rush",
                                 subtitle: "Answer fast, earn big points!",
-                                backgroundImageName: "tapImage" // Bind your asset here
+                                backgroundImageName: "quiz-image" // Bind your asset here
                             ) {
                                 print("Quiz Rush tapped!")
                                 startQuizRush = true
                             }
                         }
                         .padding(.horizontal)
-                        
                         // Padding cushion to prevent cards getting hidden by your custom Navigation/Tab Bars
                         Spacer(minLength: 100)
                     }

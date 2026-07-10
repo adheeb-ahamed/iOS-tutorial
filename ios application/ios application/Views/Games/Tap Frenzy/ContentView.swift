@@ -60,6 +60,13 @@ struct ContentView: View {
         ZStack {
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
+            
+//            Image("Bg-tapImage")
+//            .resizable()
+//            .scaledToFill()
+//            .ignoresSafeArea()
+            
+            
 
             VStack(spacing: 0) {
                 HStack(spacing: 12) {

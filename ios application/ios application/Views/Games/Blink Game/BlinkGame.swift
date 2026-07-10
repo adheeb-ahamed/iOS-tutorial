@@ -64,6 +64,7 @@ struct BlinkGame: View {
         ZStack {
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
+            
 
             VStack(spacing: 20) {
                 Text("Light It Up!")

@@ -13,6 +13,8 @@ struct QuizResponse: Codable {
 
 
 struct Question: Codable {
+    
+    
     let question : String
     let correct_answer : String
     let incorrect_answers : [String]  //These is series of answers it has more than one that is why covered in square brackets
