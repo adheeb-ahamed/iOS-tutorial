@@ -9,10 +9,14 @@ import SwiftUI
 struct QuizView: View {
 
     @StateObject var vm = QuizViewModel()
+    
+    let settings: QuizSettings
 
     @State var locationManager = LocationManager.shared
 
     @Binding var showGame: Bool
+    
+   
 
     let columns = [
         GridItem(.flexible()),
@@ -35,13 +39,13 @@ struct QuizView: View {
                     total: vm.questions.count
                 ) {
                     vm.resetGame()
-                    vm.loadQuestions()
+                    vm.loadQuestions(settings: settings)
                 }
             }
         }
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .task {
-            vm.loadQuestions()
+            vm.loadQuestions(settings: settings)
         }
         .toolbar(.hidden, for: .tabBar)
     }
@@ -64,7 +68,7 @@ struct QuizView: View {
                 .font(.system(.headline, design: .rounded))
             Button("Retry") {
                 Task { @MainActor in
-                    vm.loadQuestions()
+                    vm.loadQuestions(settings: settings)
                 }
             }
             .font(.system(.headline, design: .rounded))
@@ -164,7 +168,7 @@ struct QuizView: View {
             return Color.gray.opacity(0.2)
         }
 
-        let correct = vm.questions[vm.currentIndex].correct_answer
+        let correct = vm.questions[vm.currentIndex].correctAnswer
         let selectedAnswer = vm.selectedAnswer
 
         if option == correct {
@@ -178,5 +182,8 @@ struct QuizView: View {
 }
 
 #Preview {
-    QuizView(showGame: .constant(true))
+    QuizView(
+        settings : QuizSettings(),
+        showGame: .constant(true)
+    )
 }

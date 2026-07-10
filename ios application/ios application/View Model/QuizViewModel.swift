@@ -34,7 +34,7 @@ class QuizViewModel: ObservableObject {
 
     let service = QuizService()
 
-    func loadQuestions() {
+    func loadQuestions(settings : QuizSettings) {
         if hasloaded { return }
         hasloaded = true
         
@@ -43,15 +43,17 @@ class QuizViewModel: ObservableObject {
 
         Task {
             do {
-                let fetched = try await service.getQuestions()
+                let fetched = try await service.getQuestions(settings: settings)
                 print("Fetched questions", fetched.count)
                 print("Starting api request")
 
                 let decodedQuestions = fetched.map { question in
                     Question(
+                        category: question.category,
+                        difficulty: question.difficulty,
                         question: question.question.htmlDecoded,
-                        correct_answer: question.correct_answer.htmlDecoded,
-                        incorrect_answers: question.incorrect_answers.map { $0.htmlDecoded }
+                        correctAnswer: question.correctAnswer.htmlDecoded,
+                        incorrectAnswers: question.incorrectAnswers.map { $0.htmlDecoded }
                     )
                 }
 
@@ -77,7 +79,7 @@ class QuizViewModel: ObservableObject {
         selectedAnswer = selected
         showAnswerResult = true
         
-        let correct = questions[currentIndex].correct_answer
+        let correct = questions[currentIndex].correctAnswer
         
         if selected == correct {
             score += 1
@@ -107,6 +109,9 @@ class QuizViewModel: ObservableObject {
         score = 0
         currentIndex = 0
         questions = []
+        answerOptions = []
+        selectedAnswer = nil
+        showAnswerResult = false
         viewState = .loading
         hasloaded = false  
     }
@@ -115,7 +120,7 @@ class QuizViewModel: ObservableObject {
     func loadAnswerOptions(){
         let current = questions[currentIndex]
         
-        answerOptions = (current.incorrect_answers + [current.correct_answer]).shuffled()
+        answerOptions = (current.incorrectAnswers + [current.correctAnswer]).shuffled()
     }
     
     func endGame(){
@@ -131,19 +136,6 @@ class QuizViewModel: ObservableObject {
         GameSessionManager.shared.saveSessions(session)
     }
     
-    func finishGame(){
-        
-        let session = GameSessionModel(
-            
-            id: UUID(),
-            mode: .tapFrenzy,
-            score : score,
-            timestamp:Date(),
-            latitude: locationManager.latitude,
-            longitude: locationManager.longitude
-        )
-        GameSessionManager.shared.saveSessions(session)
-    }
 }
 
 // End of QuizViewModel

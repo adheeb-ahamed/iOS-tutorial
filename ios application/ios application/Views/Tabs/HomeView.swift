@@ -115,7 +115,7 @@ struct MainView: View {
                 BlinkGame(showGame: $startLightItUpGame)
             }
             .navigationDestination(isPresented: $startQuizRush) {
-                QuizView(showGame: $startQuizRush)
+                QuizSettingsView()
             }
             .onAppear {
                 locationManager.requestPermission()
