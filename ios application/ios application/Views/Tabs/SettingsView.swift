@@ -113,6 +113,7 @@ struct SettingsView: View {
         UserDefaults.standard.removeObject(forKey: "lightItUpHighScore")
         UserDefaults.standard.removeObject(forKey: "TapGameHighScore")
         UserDefaults.standard.removeObject(forKey: "dailyChallengeCompleted")
+        UserDefaults.standard.removeObject(forKey: "todaysChallengeKey")
         
         // 3. Reset Challenge Reminder Time
         UserDefaults.standard.removeObject(forKey: "challengeHour")

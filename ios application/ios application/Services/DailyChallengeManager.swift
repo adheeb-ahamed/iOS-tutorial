@@ -18,15 +18,42 @@ class DailyChallengeManager : ObservableObject {
     @AppStorage("challengeMinute") private var challengeMinute = 0
     
     private let completedDateKey = "dailyChallengeCompleted"
+    private let challengeKey = "todaysChallengeKey"
+    
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         checkChallenge()
+        setupSessionObservation()
+    }
+    
+    private func setupSessionObservation() {
+        GameSessionManager.shared.$sessions
+            .sink { [weak self] sessions in
+                self?.evaluateSessions(sessions)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func evaluateSessions(_ sessions: [GameSessionModel]) {
+        guard let challenge = todaysChallenge, !isCompletedToday() else { return }
+        
+        let today = Date()
+        let calendar = Calendar.current
+        let completedToday = sessions.contains { session in
+            session.mode == challenge.targetMode && calendar.isDate(session.timestamp, inSameDayAs: today)
+        }
+        
+        if completedToday {
+            completeChallenge()
+        }
     }
     
     func checkChallenge() {
             // 1. First check if they already finished it today
             if isCompletedToday() {
                 todaysChallenge = nil
+                UserDefaults.standard.removeObject(forKey: challengeKey)
                 return
             }
             
@@ -48,19 +75,57 @@ class DailyChallengeManager : ObservableObject {
                 return
             }
             
-            // Challenge is unlocked! Set it up
-            todaysChallenge = DailyChallengeModel(
+            // 2. Check if we have a challenge saved for today in UserDefaults
+            if let savedData = UserDefaults.standard.data(forKey: challengeKey),
+               let savedChallenge = try? JSONDecoder().decode(DailyChallengeModel.self, from: savedData) {
+                
+                if Calendar.current.isDateInToday(savedChallenge.dateCreated) {
+                    todaysChallenge = savedChallenge
+                    return
+                }
+            }
+            
+            // 3. Challenge is unlocked! Set up a random one
+            let randomMode = [GameMode.tapFrenzy, GameMode.lightItUp, GameMode.quizRush].randomElement() ?? .quizRush
+            let title: String
+            let description: String
+            
+            switch randomMode {
+            case .tapFrenzy:
+                title = "Tap Frenzy Speedrun"
+                description = "Play one game of Tap Frenzy today."
+            case .lightItUp:
+                title = "Reflex Master"
+                description = "Play one game of Light It Up today."
+            case .quizRush:
+                title = "Brain Trainer"
+                description = "Play one game of Quiz Rush today."
+            }
+            
+            let newChallenge = DailyChallengeModel(
                 id: UUID(),
-                title: "Daily Quiz",
-                description: "Complete one Quiz Rush game today.",
+                title: title,
+                description: description,
                 avaialableHour: challengeHour,
+                targetMode: randomMode,
+                dateCreated: now,
                 completed: false
             )
+            
+            todaysChallenge = newChallenge
+            saveChallenge(newChallenge)
+        }
+        
+        private func saveChallenge(_ challenge: DailyChallengeModel) {
+            if let encoded = try? JSONEncoder().encode(challenge) {
+                UserDefaults.standard.set(encoded, forKey: challengeKey)
+            }
         }
         
         func completeChallenge() {
             // FIX: Store the exact timestamp of execution instead of a flat boolean flag
             UserDefaults.standard.set(Date(), forKey: completedDateKey)
+            UserDefaults.standard.removeObject(forKey: challengeKey)
             todaysChallenge = nil
         }
         

@@ -49,8 +49,17 @@ struct MainView: View {
                         
                         // Dynamic Daily Challenge banner injection if active
                         if let challenge = challengeManager.todaysChallenge {
-                            DailyChallengeBanner(challenge: challenge, manager: challengeManager)
-                                .padding(.horizontal)
+                            DailyChallengeBanner(challenge: challenge, manager: challengeManager) { mode in
+                                switch mode {
+                                case .tapFrenzy:
+                                    startTapGame = true
+                                case .lightItUp:
+                                    startLightItUpGame = true
+                                case .quizRush:
+                                    startQuizRush = true
+                                }
+                            }
+                            .padding(.horizontal)
                         }
                         
                         // Main Scrollable List of Game Cards

@@ -10,6 +10,7 @@ import SwiftUI
 struct DailyChallengeBanner: View {
     let challenge: DailyChallengeModel
     @ObservedObject var manager: DailyChallengeManager
+    var onPlayChallenge: (GameMode) -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -29,15 +30,15 @@ struct DailyChallengeBanner: View {
                 .foregroundColor(.secondary)
             
             Button {
-                manager.completeChallenge()
+                onPlayChallenge(challenge.targetMode)
             } label: {
-                Text("Complete Challenge")
+                Text("Play Challenge")
                     .font(.subheadline)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 40)
-                    .background(Color.green)
+                    .background(Color.blue)
                     .cornerRadius(12)
             }
             .padding(.top, 4)
