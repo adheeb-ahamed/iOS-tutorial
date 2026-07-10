@@ -10,317 +10,277 @@ import Combine
 import AVFoundation
 
 struct ContentView: View {
-    @State private var count = 0  //To get the changing score counter
-    
-    //To create a timer
-    @State private var timerLeft = 10                            //CHANGE THIS TESTING PURPOSE
+    @State private var count = 0
+
+    @State private var timerLeft = 10
     @State private var isTimerRunning = false
-    
-    //New navigation layer
+
     @State private var goToGameover = false
-    
-    //Change of button size
-    @State private var buttonSize : CGFloat = 200
-    
-    //Change the button size
-    @State private var xPosition : CGFloat = 200
-    @State private var yPosition : CGFloat = 350
-    
-    //I want to change the font size at the same time
-    @State private var fontSize : CGFloat = 30
-    
-    @State private var game = 30 // CHANGE THISSSSS
-    
-    //Get the location
+
+    @State private var buttonSize: CGFloat = 200
+
+    @State private var xPosition: CGFloat = 200
+    @State private var yPosition: CGFloat = 350
+
+    @State private var fontSize: CGFloat = 30
+
+    @State private var game = 30
+
     @State var locationManager = LocationManager.shared
-    
-    
-    // To stop timer from running
-    @State private var cancellable : Cancellable?
-    
+
+    @State private var cancellable: Cancellable?
+
     @Binding var showGame: Bool
-    
-    //Temporary storage
+
     @AppStorage("TapGameHighScore") private var highScore: Int = 0
-    
-    
-//    @State private var isRed: Bool = true
-    
-    
+
     @State private var currentTarget: targetType = .red
-    
+
     @State private var tickCount = 0
-    
-    //This is to add a sound
-    @State private var audioPlayer : AVAudioPlayer?
-    
-    
-    //Checks if the color is red
-//    var targetColor : Color {
-//        isRed ? Color.red : Color.yellow
-//    }
-    
-    //if the color is red the text changes
-//    var targetText : String {
-//        isRed ? "Tap me!" : "Bonus!"
-//    }
-    
-    enum targetType{
+
+    @State private var audioPlayer: AVAudioPlayer?
+
+    @State private var playAreaWidth: CGFloat = 300
+    @State private var playAreaHeight: CGFloat = 400
+
+    enum targetType {
         case red
         case yellow
         case bomb
     }
-    
-    
-    enum GameState{
+
+    enum GameState {
         case playing
         case gameOver
     }
-    
-    
-    
-    
-    
-    
-    //Create an internal timer
+
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
-    //Body
+
     var body: some View {
-        
-        //Changes from this view to other view
-        //NO NEED OF TWO NAVIGATION STACK 
-        //NavigationStack {
-            
-            //Enter layer
-            ZStack {
-                
-                Text ("High Score : \(highScore)")
-                    .position(x: 200, y: 55)
-                    .foregroundStyle(Color.gray)
-//                Color(
-//                    red:200 / 255,
-//                    green: 243 / 255,
-//                    blue: 247 / 255
-//                ).ignoresSafeArea(edges: .all) //color the entire area
-                
-                
-                
-                //Vertical layer
-                VStack {
-                    
-                    Text("Score : \(count)")
-                        .font(.system(size: 30))
+        ZStack {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
 
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    metricCapsule(label: "Score", value: "\(count)")
                     Spacer()
+                    metricCapsule(label: "High Score", value: "\(highScore)")
+                }
+                .padding(.horizontal)
+                .padding(.top, 12)
 
+                GeometryReader { geo in
                     Button {
                         if timerLeft <= 10 && timerLeft > 0 {
-                            
-//                            if isRed {
-//                                count += 1
-//                            } else {
-//                                count += 5
-//                            }
-                            
-                            
-                            // Button score for each tap and color
-                            switch currentTarget{
-                                
-                            case .red
-                                : count += 1
-                                print ("red is being tapped")
+                            switch currentTarget {
+                            case .red:
+                                count += 1
+                                print("red is being tapped")
                                 playSound(named: "points")
-                                
-                            case .yellow
-                                : count += 5
-                                print ("Yellow is being tapped")
+
+                            case .yellow:
+                                count += 5
+                                print("Yellow is being tapped")
                                 playSound(named: "bonus")
-                                
-                            case .bomb
-                                :count -= 10
-                                print ("bomb is being tapped")
+
+                            case .bomb:
+                                count -= 10
+                                print("bomb is being tapped")
                                 playSound(named: "bomb")
                                 if count < 5 {
                                     count = 0
                                 }
-                                
-                                
-                                
-                            }//end of switch
+                            }
                         }
 
-                        if timerLeft == 10 {                 //CHANGE THIS TESTING PURPOSE
+                        if timerLeft == 10 {
                             isTimerRunning = true
                         }
                     } label: {
-                        
                         switch currentTarget {
-                            
                         case .red:
-                            Text("Tap me!")
-                                .frame(width: buttonSize, height: buttonSize)
-                                .padding()
-                                .background(.red)
-                                .foregroundColor(Color.white)
-                                .font(.system(size: fontSize))
-                                .clipShape(Circle())
-                            
-                            
+                            targetButton(
+                                text: "Tap me!",
+                                background: Color.red.opacity(0.85),
+                                foreground: .white
+                            )
+
                         case .yellow:
-                            Text ("Bonus!")
-                                .frame(width: buttonSize, height: buttonSize)
-                                .padding()
-                                .background(.yellow)
-                                .foregroundColor(Color.white)
-                                .font(.system(size: fontSize))
-                                .clipShape(Circle())
-                            
-                            
+                            targetButton(
+                                text: "Bonus!",
+                                background: Color.yellow.opacity(0.9),
+                                foreground: .primary
+                            )
+
                         case .bomb:
                             Image("bomb-4")
                                 .resizable()
-                                .frame(width: buttonSize, height: buttonSize)
                                 .scaledToFit()
+                                .frame(width: buttonSize, height: buttonSize)
+                                .shadow(color: .black.opacity(0.2), radius: 6, x: 0, y: 3)
                                 .sensoryFeedback(.success, trigger: currentTarget)
                         }
-                    
-                        
                     }
-                    .position(x: xPosition, y: yPosition)
+                    .position(
+                        x: min(max(xPosition, buttonSize / 2), geo.size.width - buttonSize / 2),
+                        y: min(max(yPosition, buttonSize / 2), geo.size.height - buttonSize / 2)
+                    )
+                    .onAppear {
+                        playAreaWidth = geo.size.width
+                        playAreaHeight = geo.size.height
+                        xPosition = geo.size.width / 2
+                        yPosition = geo.size.height / 2
+                    }
+                    .onChange(of: geo.size) { _, newSize in
+                        playAreaWidth = newSize.width
+                        playAreaHeight = newSize.height
+                    }
+                }
 
-                    Spacer()
+                timerCapsule
+                    .padding(.horizontal)
+                    .padding(.bottom, 16)
+            }
+        }
+        .toolbar(.hidden, for: .tabBar)
+        .onReceive(timer) { _ in
+            if isTimerRunning && timerLeft > 0 {
+                timerLeft -= 1
+                tickCount += 1
 
-                    Text("Timer: \(timerLeft)")
-                        .font(.system(size: 30))
-                }//End of VStack
-                
-            } //End of ZStack
-        
-            //Remove the tab bar from the game
-            .toolbar(.hidden, for: .tabBar)
-            
-            
-            
-            //this modifier explains the each passing second of timer
-            .onReceive(timer) { _ in
-                if isTimerRunning && timerLeft > 0 {
-                    timerLeft -= 1
-                    tickCount += 1
-                    
-                    
-                    if tickCount % 1 == 0 {
-                        generateTarget()
-                        moveTarget()
-                    }
-                    
-                    //this allows that after a second of bonus points it will turn back to red
-                    //                    if !isRed {
-                    //                        toggleTarget()
-                    //                    }
-                    
-                    //To match with the font size
-                    fontSize -= 1.5
-                    
-                    //reduces the button size
-                    withAnimation(.easeInOut(duration:0.9)){
-                        buttonSize -= 15
-                    }
-                    
-                    //ever 4 seconds the button will change to yellow
-//                    if timerLeft % 2 == 0 {
-//                        generateTarget()
-//                    }
-//                    
-//                    moveTarget()
-                    
-                    } else if timerLeft == 0 && !goToGameover {
-                        endGame()
-                        goToGameover = true
-                        isTimerRunning = false
-                        if count > highScore{
-                            highScore = count
-                        }
-                        stopTimer()
-                    }
+                if tickCount % 1 == 0 {
+                    generateTarget()
+                    moveTarget()
+                }
+
+                fontSize -= 1.5
+
+                withAnimation(.easeInOut(duration: 0.9)) {
+                    buttonSize -= 15
+                }
+            } else if timerLeft == 0 && !goToGameover {
+                endGame()
+                goToGameover = true
+                isTimerRunning = false
+                if count > highScore {
+                    highScore = count
+                }
+                stopTimer()
             }
-            
-            //After GameOverView it comes back to this layer
-            .navigationDestination(isPresented: $goToGameover) {
-                GameOverView(
-                    score: count,
-                    gameMode : .tapFrenzy,
-                    onRestart: {
-                        resetGame()
-                        goToGameover = false
-                    },
-                    onHome: {
-                        goToGameover = false
-                        showGame = false
-                    }
-                )
-            }
-       // }
+        }
+        .navigationDestination(isPresented: $goToGameover) {
+            GameOverView(
+                score: count,
+                gameMode: .tapFrenzy,
+                onRestart: {
+                    resetGame()
+                    goToGameover = false
+                },
+                onHome: {
+                    goToGameover = false
+                    showGame = false
+                }
+            )
+        }
     }
 
-    //This functions reset the entire score and time once you are navigated from gameOverView to this view
+    private func metricCapsule(label: String, value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(label)
+                .font(.system(.caption, design: .rounded))
+                .foregroundColor(.secondary)
+            Text(value)
+                .font(.system(.title3, design: .rounded))
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            Capsule()
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+        )
+    }
+
+    private var timerCapsule: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "timer")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundColor(.secondary)
+            Text("\(timerLeft)s")
+                .font(.system(.title3, design: .rounded))
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(
+            Capsule()
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+        )
+    }
+
+    private func targetButton(text: String, background: Color, foreground: Color) -> some View {
+        Text(text)
+            .font(.system(size: fontSize, design: .rounded))
+            .fontWeight(.bold)
+            .frame(width: buttonSize, height: buttonSize)
+            .background(background)
+            .foregroundColor(foreground)
+            .clipShape(Circle())
+            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+    }
+
     func resetGame() {
-        print ("Resetting game")
+        print("Resetting game")
         stopTimer()
         count = 0
-        timerLeft = 10                          //CHANGE THIS FOR TESTING PURPOSE ONLY
+        timerLeft = 10
         isTimerRunning = false
         buttonSize = 200
-        xPosition = 200
-        yPosition = 350
+        xPosition = playAreaWidth / 2
+        yPosition = playAreaHeight / 2
         fontSize = 30
         currentTarget = .red
-//        isRed = true
     }
-    
-    // This function is created to move the function of the button
-    func moveTarget() {
-        
-        withAnimation(.easeInOut(duration:0.5)){
-            xPosition = CGFloat.random(in: 100...300)
-            yPosition = CGFloat.random(in: 100...500)
-        }
 
+    func moveTarget() {
+        let halfSize = buttonSize / 2
+        let minX = halfSize + 20
+        let maxX = max(minX, playAreaWidth - halfSize - 20)
+        let minY = halfSize + 20
+        let maxY = max(minY, playAreaHeight - halfSize - 20)
+
+        withAnimation(.easeInOut(duration: 0.5)) {
+            xPosition = CGFloat.random(in: minX...maxX)
+            yPosition = CGFloat.random(in: minY...maxY)
+        }
     }
-    
-//    func toggleTarget()
-//    {
-//        withAnimation(.easeInOut(duration: 0.3)){
-//            isRed.toggle( )
-//        }
-//    }
-    
-    
+
     func generateTarget() {
-        let targets : [targetType] = [
+        let targets: [targetType] = [
             .red,
             .red,
             .red,
             .yellow,
             .bomb
         ]
-        
+
         currentTarget = targets.randomElement()!
-        
     }
-    
-    //To start or cancel timer
+
     func startTimer() {
         // Using autoconnect on the timer; nothing needed here for now.
-        // Keep this in case you later want manual control.
-        // cancellable = timer.connect()
     }
-    
+
     func stopTimer() {
         cancellable?.cancel()
         cancellable = nil
     }
-    
+
     func playSound(named SoundName: String) {
         guard let url = Bundle.main.url(forResource: SoundName, withExtension: "mp3") else {
             print("Sound not found")
@@ -333,9 +293,8 @@ struct ContentView: View {
             print("error playing sound : \(error)")
         }
     }
-    
-    
-    func endGame(){
+
+    func endGame() {
         let session = GameSessionModel(
             mode: .tapFrenzy,
             score: count,
@@ -345,18 +304,13 @@ struct ContentView: View {
         )
         GameSessionManager.shared.saveSessions(session)
     }
-    
-    
-    //To save each and every game that are completed
-    
-    func finishGame(){
-        
+
+    func finishGame() {
         let session = GameSessionModel(
-            
             id: UUID(),
             mode: .tapFrenzy,
-            score : count,
-            timestamp:Date(),
+            score: count,
+            timestamp: Date(),
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
@@ -364,8 +318,6 @@ struct ContentView: View {
     }
 }
 
-
 #Preview {
     ContentView(showGame: .constant(true))
 }
-

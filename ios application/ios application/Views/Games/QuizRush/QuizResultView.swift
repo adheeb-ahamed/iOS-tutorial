@@ -13,46 +13,81 @@ struct QuizResultView: View {
     var gameMode: GameMode
     let total: Int
     let restartAction: () -> Void
-    
-    
-    var shareText: String  {
+
+    var shareText: String {
         """
         I scored \(score) points in \(gameMode.rawValue)!
-        
+
         Can you beat my score?
         """
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        ZStack {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
 
-            Text("Quiz Completed")
-                .font(.largeTitle)
-                .bold()
+            VStack(spacing: 24) {
+                Text("Quiz Completed")
+                    .font(.system(.largeTitle, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
 
-            Text("Score: \(score) / \(total)")
-                .font(.title2)
+                VStack(spacing: 12) {
+                    Text("\(score) / \(total)")
+                        .font(.system(size: 48, design: .rounded))
+                        .fontWeight(.black)
+                        .foregroundColor(.primary)
 
-            Text(resultMessage)
-                .font(.headline)
-                .foregroundColor(.gray)
+                    Text("Correct Answers")
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundColor(.secondary)
 
-            Button("Play Again") {
-                restartAction()
-            }
-            .padding()
-            .background(.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            
-            
-            ShareLink(item: shareText) {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.title2)
-                    .foregroundStyle(.white)
-                    .padding()
-                    .background(Color.blue)
-                    .clipShape(Circle())
+                    Text(resultMessage)
+                        .font(.system(.headline, design: .rounded))
+                        .foregroundColor(.secondary)
+                        .padding(.top, 4)
+                }
+                .padding(.vertical, 28)
+                .padding(.horizontal, 32)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
+                )
+                .padding(.horizontal, 24)
+
+                VStack(spacing: 12) {
+                    Button(action: restartAction) {
+                        Label("Play Again", systemImage: "arrow.counterclockwise")
+                            .font(.system(.headline, design: .rounded))
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                                    .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                            )
+                    }
+
+                    ShareLink(item: shareText) {
+                        Label("Share Score", systemImage: "square.and.arrow.up")
+                            .font(.system(.headline, design: .rounded))
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                                    .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                            )
+                    }
+                }
+                .padding(.horizontal, 24)
             }
         }
     }

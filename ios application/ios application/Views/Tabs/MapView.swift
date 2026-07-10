@@ -63,28 +63,21 @@ struct MapView: View {
             }
         }
         .sheet(item: $selectedLocation) { location in
-            
-            ScrollView {
-                
-                VStack(alignment: .leading, spacing: 12) {
-                    
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 16) {
                     Text("Game History")
-                        .font(.title)
+                        .font(.system(.title2, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
                         .padding(.bottom, 4)
-                    
-                    
+
                     ForEach(location.sessions.sorted { $0.timestamp > $1.timestamp }) { session in
-                        
                         SessionCard(session: session)
-                            .padding(.horizontal)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(session.mode.color.opacity(0.15))
-                            
                     }
                 }
                 .padding()
             }
+            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         }
     }
 }
