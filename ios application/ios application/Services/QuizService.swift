@@ -13,6 +13,8 @@ struct QuizService {
         
         var components = URLComponents(string: "https://opentdb.com/api.php?amount=10&type=multiple")! //here exclaimation mark means i'm 100% certain that this is the url there is no other url. Or else you could use else statement to show optional url or else the app could crash.
         
+        
+        
         components.queryItems = [
             URLQueryItem(name: "amount", value: "\(settings.amount)"),
             URLQueryItem(name: "category", value: "\(settings.category.rawValue)"),
@@ -21,6 +23,9 @@ struct QuizService {
         ]
         
         let url = components.url!
+        
+        print("Generated URL:")
+        print(url.absoluteString)
         
         let (data, _) = try await URLSession.shared.data(from: url) //downloads the data from the fetched URL
         

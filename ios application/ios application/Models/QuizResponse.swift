@@ -19,6 +19,15 @@ struct Question: Codable {
     let question : String
     let correctAnswer : String
     let incorrectAnswers : [String]  //These is series of answers it has more than one that is why covered in square brackets
+    
+    
+    enum CodingKeys: String, CodingKey {
+        case category
+        case difficulty
+        case question
+        case correctAnswer = "correct_answer"
+        case incorrectAnswers = "incorrect_answers"
+    }
 }
 
 extension String {

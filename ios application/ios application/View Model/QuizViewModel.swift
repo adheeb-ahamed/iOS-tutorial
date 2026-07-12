@@ -28,6 +28,8 @@ class QuizViewModel: ObservableObject {
     @Published var selectedAnswer: String? = nil
     @Published var showAnswerResult: Bool = false
     @Published var answerOptions : [String] = []
+    
+    @Published var timeRemaining: Int = 60
 
     
     private var hasloaded = false // This is just a guard to check if api is loaded properly
@@ -35,6 +37,9 @@ class QuizViewModel: ObservableObject {
     let service = QuizService()
 
     func loadQuestions(settings : QuizSettings) {
+        
+        timeRemaining = settings.timeLimit
+        
         if hasloaded { return }
         hasloaded = true
         
@@ -59,6 +64,7 @@ class QuizViewModel: ObservableObject {
 
                 await MainActor.run {
                     self.questions = decodedQuestions
+                    self.startTimer()
                     self.loadAnswerOptions()
                     self.viewState = .loaded
                     print("API request finished")
@@ -100,6 +106,7 @@ class QuizViewModel: ObservableObject {
             print("Current Index:", currentIndex)
         } else {
             print("Quiz Finished!")
+            quizTimer?.invalidate()
             endGame()
             viewState = .finished
         }
@@ -134,6 +141,34 @@ class QuizViewModel: ObservableObject {
             longitude: locationManager.longitude
         )
         GameSessionManager.shared.saveSessions(session)
+    }
+    
+    private var quizTimer: Timer?
+    
+    func startTimer() {
+        quizTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+            
+            guard let self else { return }
+            
+            if self.timeRemaining > 0 {
+                self.timeRemaining -= 1
+            }else {
+                timer.invalidate()
+                self.finishQuiz()
+            }
+        }
+    }
+    
+    private func finishQuiz() {
+        // stop timer and finish the quiz
+        quizTimer?.invalidate()
+        quizTimer = nil
+        endGame()
+        viewState = .finished
+    }
+    
+    deinit {
+        quizTimer?.invalidate()
     }
     
 }

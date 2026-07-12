@@ -16,6 +16,8 @@ struct QuizView: View {
 
     @Binding var showGame: Bool
     
+    
+    
    
 
     let columns = [
@@ -141,6 +143,10 @@ struct QuizView: View {
             .padding(.horizontal)
 
             Spacer()
+            
+            timerCapsule
+                .padding(.horizontal)
+                .padding(.bottom, 16)
         }
     }
 
@@ -179,6 +185,25 @@ struct QuizView: View {
         }
         return Color.gray.opacity(0.2)
     }
+    
+    private var timerCapsule: some View {
+        HStack(spacing: 6) {
+            Text("Time")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundColor(.secondary)
+            Text("⏱\(vm.timeRemaining)")
+                .font(.system(.title3, design: .rounded))
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(
+            Capsule()
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+        )
+    }
 }
 
 #Preview {
@@ -187,3 +212,4 @@ struct QuizView: View {
         showGame: .constant(true)
     )
 }
+

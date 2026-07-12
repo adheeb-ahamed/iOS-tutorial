@@ -1,76 +1,167 @@
-//
-//  QuizSettingsView.swift
-//  ios application
-//
-//  Created by student5 on 2026-07-11.
-//
-
 import SwiftUI
 
 struct QuizSettingsView: View {
 
     @State private var settings = QuizSettings()
-
     @State private var startQuiz = false
 
     var body: some View {
 
         NavigationStack {
 
-            Form {
+            ZStack {
 
-                Section("Number of Questions") {
+                LinearGradient(
+                    colors: [
+                        Color.blue.opacity(0.8),
+                        Color.cyan.opacity(0.35),
+                        Color.black.opacity(0.15)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
-                    Picker("Questions", selection: $settings.amount) {
 
-                        Text("5").tag(5)
-                        Text("10").tag(10)
-                        Text("15").tag(15)
-                        Text("20").tag(20)
-                    }
-                }
+                ScrollView {
 
-                Section("Difficulty") {
+                    VStack(spacing: 22) {
 
-                    Picker("Difficulty", selection: $settings.difficulty) {
+                        header
 
-                        ForEach(Difficulty.allCases) { difficulty in
 
-                            Text(difficulty.title)
-                                .tag(difficulty)
+                        settingCard(
+                            title: "Questions",
+                            icon: "questionmark.circle.fill"
+                        ) {
+
+                            optionPicker {
+                                
+                                Picker(
+                                    "",
+                                    selection: $settings.amount
+                                ) {
+
+                                    Text("5").tag(5)
+                                    Text("10").tag(10)
+                                    Text("15").tag(15)
+                                    Text("20").tag(20)
+                                }
+                                .pickerStyle(.segmented)
+                            }
                         }
-                    }
-                }
 
-                Section("Category") {
 
-                    Picker("Category", selection: $settings.category) {
 
-                        ForEach(QuizCategory.allCases) { category in
+                        settingCard(
+                            title: "Difficulty",
+                            icon: "chart.bar.fill"
+                        ) {
 
-                            Text(category.title)
-                                .tag(category)
+                            Picker(
+                                "",
+                                selection: $settings.difficulty
+                            ) {
+
+                                ForEach(Difficulty.allCases) { difficulty in
+
+                                    Text(difficulty.title)
+                                        .tag(difficulty)
+                                }
+                            }
+                            .pickerStyle(.segmented)
                         }
+
+
+
+                        settingCard(
+                            title: "Category",
+                            icon: "books.vertical.fill"
+                        ) {
+
+                            Picker(
+                                "",
+                                selection: $settings.category
+                            ) {
+
+                                ForEach(QuizCategory.allCases) { category in
+
+                                    Text(category.title)
+                                        .tag(category)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                        }
+
+
+
+                        settingCard(
+                            title: "Time Limit",
+                            icon: "timer"
+                        ) {
+
+                            Picker(
+                                "",
+                                selection: $settings.timeLimit
+                            ) {
+
+                                Text("30s").tag(30)
+                                Text("60s").tag(60)
+                                Text("90s").tag(90)
+                                Text("120s").tag(120)
+                            }
+                            .pickerStyle(.segmented)
+                        }
+
+
+
+                        Button {
+
+                            startQuiz = true
+
+                        } label: {
+
+                            HStack {
+
+                                Image(systemName: "bolt.fill")
+
+                                Text("Start Quiz")
+                                    .fontWeight(.bold)
+
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                .blue,
+                                                .cyan
+                                            ],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
+                            .foregroundColor(.white)
+                            .shadow(
+                                color: .cyan.opacity(0.5),
+                                radius: 10
+                            )
+                        }
+                        .padding(.top)
+
+
+
                     }
-                }
-
-                Section("Time Limit") {
-
-                    Picker("Time", selection: $settings.timeLimit) {
-
-                        Text("30 Seconds").tag(30)
-                        Text("60 Seconds").tag(60)
-                        Text("90 Seconds").tag(90)
-                        Text("120 Seconds").tag(120)
-                    }
-                }
-
-                Button("Start Quiz") {
-
-                    startQuiz = true
+                    .padding()
                 }
             }
-            .navigationTitle("Quiz Settings")
+
+            .navigationTitle("Quiz Setup")
+            .navigationBarTitleDisplayMode(.inline)
+
 
             .navigationDestination(isPresented: $startQuiz) {
 
@@ -80,5 +171,95 @@ struct QuizSettingsView: View {
                 )
             }
         }
+    }
+}
+
+extension QuizSettingsView {
+
+
+    private var header: some View {
+
+        VStack(spacing: 10) {
+
+            Image(systemName: "brain.head.profile")
+                .font(.system(size: 65))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.cyan,.blue],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+
+
+            Text("Quiz Rush")
+                .font(
+                    .system(
+                        size: 34,
+                        design: .rounded
+                    )
+                )
+                .fontWeight(.black)
+
+
+            Text("Configure your challenge")
+                .foregroundColor(.secondary)
+        }
+        .padding(.top,20)
+    }
+
+
+
+    private func settingCard<Content: View>(
+        title:String,
+        icon:String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+
+
+        VStack(
+            alignment:.leading,
+            spacing:15
+        ) {
+
+            HStack {
+
+                Image(systemName: icon)
+                    .frame(
+                        width:35,
+                        height:35
+                    )
+                    .background(
+                        Circle()
+                            .fill(
+                                Color.blue.opacity(0.15)
+                            )
+                    )
+
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.bold)
+
+            }
+
+
+            content()
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(
+                cornerRadius:22
+            )
+            .fill(.ultraThinMaterial)
+        )
+    }
+
+
+
+    private func optionPicker<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+
+        content()
     }
 }
