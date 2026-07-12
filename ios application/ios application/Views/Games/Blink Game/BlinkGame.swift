@@ -13,6 +13,8 @@ struct BlinkGame: View {
     @State private var scoreResult: Int = 0
 
     @State private var level: Int = 1
+    
+    @State private var hearts: Int = 3
 
     @State var locationManager = LocationManager.shared
 
@@ -73,7 +75,11 @@ struct BlinkGame: View {
                     .foregroundColor(.primary)
                     .padding(.top, 8)
 
-                topMetricsCard
+                HStack (spacing : 12) {
+                    topMetricsCard
+                    heartsView
+                }
+                .padding(.horizontal,20)
 
                 Spacer()
 
@@ -81,12 +87,32 @@ struct BlinkGame: View {
                     ForEach(cards) { card in
                         Button(action: {
                             if card.isLit {
+
                                 scoreResult += 1
+
                             } else {
+
+                                withAnimation {
+                                    hearts -= 1
+                                }
+
+
                                 if scoreResult <= 2 {
                                     scoreResult = 0
                                 } else {
                                     scoreResult -= 3
+                                }
+
+
+                                if hearts == 0 {
+                                    isTimerRunning = false
+                                    endGame()
+
+                                    if scoreResult > highScore {
+                                        highScore = scoreResult
+                                    }
+
+                                    goToGameover = true
                                 }
                             }
                         }) {
@@ -180,6 +206,31 @@ struct BlinkGame: View {
         )
         .padding(.horizontal, 20)
     }
+    
+    private var heartsView: some View {
+
+        HStack(spacing: 8) {
+
+            ForEach(0..<3, id: \.self) { index in
+
+                Image(systemName: index < hearts ? "heart.fill" : "heart")
+                    .foregroundColor(index < hearts ? .red : .gray)
+                    .font(.title2)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(
+            Capsule()
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .shadow(
+                    color: .black.opacity(0.08),
+                    radius: 4,
+                    x: 0,
+                    y: 2
+                )
+        )
+    }
 
     private func metricItem(label: String, value: String) -> some View {
         VStack(spacing: 4) {
@@ -261,6 +312,7 @@ struct BlinkGame: View {
         hasEndedGame = false
         setupCards(for: level)
         timerLeft = 60
+        hearts = 3
     }
 
     func startTimer() {

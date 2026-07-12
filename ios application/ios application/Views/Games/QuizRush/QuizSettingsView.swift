@@ -111,7 +111,9 @@ struct QuizSettingsView: View {
                                 Text("120s").tag(120)
                             }
                             .pickerStyle(.segmented)
+                            .frame(maxWidth: .infinity)
                         }
+                        
 
 
 
@@ -220,7 +222,7 @@ extension QuizSettingsView {
         VStack(
             alignment:.leading,
             spacing:15
-        ) {
+        ){
 
             HStack {
 
@@ -245,6 +247,7 @@ extension QuizSettingsView {
 
             content()
         }
+        .frame(maxWidth: .infinity)
         .padding(20)
         .background(
             RoundedRectangle(
@@ -262,4 +265,7 @@ extension QuizSettingsView {
 
         content()
     }
+}
+#Preview {
+    QuizSettingsView()
 }
