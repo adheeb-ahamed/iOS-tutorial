@@ -10,6 +10,11 @@ struct QuizView: View {
 
     @StateObject var vm = QuizViewModel()
     
+    @StateObject private var soundManager = QuizSoundManager.shared
+
+    @State private var hasStartedQuizAudio = false
+    @State private var suspenseRestartTask: Task<Void, Never>?
+    
     let settings: QuizSettings
 
     @State var locationManager = LocationManager.shared
@@ -119,7 +124,7 @@ struct QuizView: View {
             LazyVGrid(columns: columns, spacing: 14) {
                 ForEach(vm.answerOptions, id: \.self) { option in
                     Button(action: {
-                        vm.answer(option)
+                        handleAnswer(option)
                     }) {
                         Text(option)
                             .font(.system(.body, design: .rounded))
@@ -148,6 +153,33 @@ struct QuizView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 16)
         }
+        .onAppear {
+            guard !hasStartedQuizAudio else {
+                return
+            }
+
+            hasStartedQuizAudio = true
+            soundManager.playIntroThenSuspense()
+        }
+        .onChange(of: vm.currentIndex) { oldIndex, newIndex in
+            guard newIndex != oldIndex else {
+                return
+            }
+
+            playQuestionChange()
+        }
+        .onChange(of: vm.timeRemaining) { _, newTime in
+            if newTime == 0 {
+                suspenseRestartTask?.cancel()
+                soundManager.stopSuspense()
+                soundManager.playWrongAnswer()
+            }
+        }
+        .onDisappear {
+            suspenseRestartTask?.cancel()
+            soundManager.stopAllSounds()
+        }
+        
     }
 
     private func metricCapsule(label: String, value: String) -> some View {
@@ -184,6 +216,49 @@ struct QuizView: View {
             return Color.red.opacity(0.35)
         }
         return Color.gray.opacity(0.2)
+    }
+    
+    private func handleAnswer(_ option: String) {
+        guard !vm.showAnswerResult else {
+            return
+        }
+
+        suspenseRestartTask?.cancel()
+
+        // Stop suspense as soon as an answer is selected
+        soundManager.stopSuspense()
+
+        let correctAnswer =
+            vm.questions[vm.currentIndex].correctAnswer
+
+        if option == correctAnswer {
+            soundManager.playCorrectAnswer()
+        } else {
+            soundManager.playWrongAnswer()
+        }
+
+        // Continue with your existing answer logic
+        vm.answer(option)
+    }
+    
+    private func playQuestionChange() {
+        suspenseRestartTask?.cancel()
+
+        soundManager.stopSuspense()
+        soundManager.playNextQuestionSound()
+
+        suspenseRestartTask = Task { @MainActor in
+            // Wait for the approximately 2-second transition sound
+            try? await Task.sleep(
+                nanoseconds: 2_000_000_000
+            )
+
+            guard !Task.isCancelled else {
+                return
+            }
+
+            soundManager.playSuspense()
+        }
     }
     
     private var timerCapsule: some View {
