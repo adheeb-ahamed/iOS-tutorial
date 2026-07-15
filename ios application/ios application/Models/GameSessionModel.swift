@@ -6,7 +6,7 @@ import Foundation
 import SwiftUI
 
 //Represents the different types of app we are using the gameSession for
-enum GameMode: String, Codable {
+enum GameMode: String, Codable, CaseIterable {
     case tapFrenzy = "Tap Frenzy"
     case lightItUp = "Light it up"
     case quizRush = "Quiz Rush"
@@ -39,3 +39,4 @@ struct GameSessionModel: Codable, Identifiable {
     
     
 }
+
