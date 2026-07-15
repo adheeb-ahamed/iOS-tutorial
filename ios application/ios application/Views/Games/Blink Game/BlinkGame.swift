@@ -7,47 +7,50 @@
 
 import SwiftUI
 import Combine
+import AVFoundation
 
 struct BlinkGame: View {
-
+    
     @State private var scoreResult: Int = 0
-
+    
     @State private var level: Int = 1
     
     @State private var hearts: Int = 3
-
+    
     @State var locationManager = LocationManager.shared
-
+    
     @State private var hasEndedGame = false
-
+    
     @State private var timerLeft = 60
     @State private var isTimerRunning = true
-
+    
     @State private var cards: [Card] = [
         Card(isLit: false),
         Card(isLit: false),
         Card(isLit: false)
     ]
-
+    
     @State private var previousLevel: Int = 1
     
-//    @State private var audioPlayer: AVAudioPlayer?
-
+    @State private var backgroundMusicPlayer: AVAudioPlayer?
+    
+    @State private var soundEffectPlayer: AVAudioPlayer?
+    
     @State private var cancellable: Cancellable?
-
+    
     @State private var goToGameover = false
-
+    
     @Binding var showGame: Bool
-
+    
     struct Card: Identifiable {
         let id = UUID()
         var isLit: Bool
     }
-
+    
     var elapsedTime: Int {
         60 - timerLeft
     }
-
+    
     var lightInterval: Double {
         switch level {
         case 1: return 1.5
@@ -57,63 +60,66 @@ struct BlinkGame: View {
         default: return 1.5
         }
     }
-
+    
     @State private var lastLightUpdate: Date = .now
-
+    
     @AppStorage("lightItUpHighScore") private var highScore: Int = 0
-
+    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
+    
     var body: some View {
         ZStack {
             Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
             
-
+            
             VStack(spacing: 20) {
                 Text("Light It Up!")
                     .font(.system(.largeTitle, design: .rounded))
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
                     .padding(.top, 8)
-
+                
                 HStack (spacing : 12) {
                     topMetricsCard
                     heartsView
                 }
                 .padding(.horizontal,20)
-
+                
                 Spacer()
-
+                
                 LazyVGrid(columns: columns(for: level), spacing: 12) {
                     ForEach(cards) { card in
                         Button(action: {
                             if card.isLit {
-
+                                
+                                playSoundEffect(named: "points")
                                 scoreResult += 1
-
+                                
                             } else {
-
+                                
+                                playSoundEffect(named: "bomb")
+                                
                                 withAnimation {
                                     hearts -= 1
                                 }
-
-
+                                
+                                
                                 if scoreResult <= 2 {
                                     scoreResult = 0
                                 } else {
                                     scoreResult -= 3
                                 }
-
-
+                                
+                                
                                 if hearts == 0 {
                                     isTimerRunning = false
                                     endGame()
-
+                                    
                                     if scoreResult > highScore {
                                         highScore = scoreResult
                                     }
-
+                                    
                                     goToGameover = true
                                 }
                             }
@@ -127,9 +133,9 @@ struct BlinkGame: View {
                     }
                 }
                 .padding(.horizontal, 20)
-
+                
                 Spacer()
-
+                
                 timerCapsule
                     .padding(.bottom, 16)
             }
@@ -137,6 +143,10 @@ struct BlinkGame: View {
         .toolbar(.hidden, for: .tabBar)
         .onAppear {
             locationManager.requestPermission()
+            playBackgroundMusic()
+        }
+        .onDisappear {
+            stopBackgroundMusic()
         }
         .onReceive(timer) { _ in
             guard isTimerRunning && timerLeft > 0 else {
@@ -144,11 +154,11 @@ struct BlinkGame: View {
                     isTimerRunning = false
                     endGame()
                     stopTimer()
-
+                    
                     if scoreResult > highScore {
                         highScore = scoreResult
                     }
-
+                    
                     DispatchQueue.main.async {
                         goToGameover = true
                     }
@@ -156,9 +166,9 @@ struct BlinkGame: View {
                 return
             }
             timerLeft -= 1
-
+            
             let newLevel: Int
-
+            
             if elapsedTime < 15 {
                 newLevel = 1
             } else if elapsedTime < 30 {
@@ -168,12 +178,12 @@ struct BlinkGame: View {
             } else {
                 newLevel = 4
             }
-
+            
             if newLevel != level {
                 level = newLevel
                 setupCards(for: level)
             }
-
+            
             updateLighting()
         }
         .navigationDestination(isPresented: $goToGameover) {
@@ -191,7 +201,7 @@ struct BlinkGame: View {
             )
         }
     }
-
+    
     private var topMetricsCard: some View {
         HStack(spacing: 0) {
             metricItem(label: "Score", value: "\(scoreResult)")
@@ -210,11 +220,11 @@ struct BlinkGame: View {
     }
     
     private var heartsView: some View {
-
+        
         HStack(spacing: 8) {
-
+            
             ForEach(0..<3, id: \.self) { index in
-
+                
                 Image(systemName: index < hearts ? "heart.fill" : "heart")
                     .foregroundColor(index < hearts ? .red : .gray)
                     .font(.title2)
@@ -233,7 +243,7 @@ struct BlinkGame: View {
                 )
         )
     }
-
+    
     private func metricItem(label: String, value: String) -> some View {
         VStack(spacing: 4) {
             Text(label)
@@ -246,7 +256,7 @@ struct BlinkGame: View {
         }
         .frame(maxWidth: .infinity)
     }
-
+    
     private var timerCapsule: some View {
         HStack(spacing: 6) {
             Image(systemName: "timer")
@@ -265,7 +275,7 @@ struct BlinkGame: View {
                 .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
         )
     }
-
+    
     private func columns(for level: Int) -> [GridItem] {
         let count: Int
         switch level {
@@ -277,7 +287,7 @@ struct BlinkGame: View {
         }
         return Array(repeating: GridItem(.flexible(), spacing: 12), count: count)
     }
-
+    
     private func tileHeight(for level: Int) -> CGFloat {
         switch level {
         case 1: return 100
@@ -287,26 +297,26 @@ struct BlinkGame: View {
         default: return 100
         }
     }
-
+    
     func setupCards(for newLevel: Int) {
         switch newLevel {
         case 1:
             cards = (0..<3).map { _ in Card(isLit: false) }
-
+            
         case 2:
             cards = (0..<4).map { _ in Card(isLit: false) }
-
+            
         case 3:
             cards = (0..<6).map { _ in Card(isLit: false) }
-
+            
         case 4:
             cards = (0..<9).map { _ in Card(isLit: false) }
-
+            
         default:
             break
         }
     }
-
+    
     func resetGame() {
         scoreResult = 0
         level = 1
@@ -316,26 +326,26 @@ struct BlinkGame: View {
         timerLeft = 60
         hearts = 3
     }
-
+    
     func startTimer() {
         // Using autoconnect on the timer; nothing needed here for now.
     }
-
+    
     func stopTimer() {
         cancellable?.cancel()
         cancellable = nil
     }
-
+    
     func updateLighting() {
         let now = Date()
-
+        
         if now.timeIntervalSince(lastLightUpdate) >= lightInterval {
             lastLightUpdate = now
-
+            
             for i in cards.indices {
                 cards[i].isLit = false
             }
-
+            
             if level == 4 {
                 let randomIndexes = cards.indices.shuffled().prefix(2)
                 for i in randomIndexes {
@@ -348,14 +358,14 @@ struct BlinkGame: View {
             }
         }
     }
-
+    
     func endGame() {
         guard !hasEndedGame else {
             return
         }
-
+        
         hasEndedGame = true
-
+        
         let session = GameSessionModel(
             mode: .lightItUp,
             score: scoreResult,
@@ -365,7 +375,7 @@ struct BlinkGame: View {
         )
         GameSessionManager.shared.saveSessions(session)
     }
-
+    
     func finishGame() {
         let session = GameSessionModel(
             id: UUID(),
@@ -378,18 +388,53 @@ struct BlinkGame: View {
         GameSessionManager.shared.saveSessions(session)
     }
     
-//    func playSound(named SoundName: String) {
-//        guard let url = Bundle.main.url(forResource: SoundName, withExtension: "mp3") else {
-//            print("Sound not found")
-//            return
-//        }
-//        do {
-//            audioPlayer = try AVAudioPlayer(contentsOf: url)
-//            audioPlayer?.play()
-//        } catch {
-//            print("error playing sound : \(error)")
-//        }
-//    }
+    private func playBackgroundMusic() {
+        guard let soundURL = Bundle.main.url(forResource: "LightSound", withExtension: "mp3") else {
+            print("Background sound not found!")
+            return
+        }
+        
+        do{
+            try AVAudioSession.sharedInstance().setCategory(
+                .ambient,
+                mode : .default
+            )
+            
+            try AVAudioSession.sharedInstance().setActive(true)
+            
+            backgroundMusicPlayer = try AVAudioPlayer(contentsOf: soundURL)
+            
+            backgroundMusicPlayer?.numberOfLoops = -1
+            
+            backgroundMusicPlayer?.volume = 0.35
+            
+            backgroundMusicPlayer?.prepareToPlay()
+            backgroundMusicPlayer?.play()
+        }catch{
+            print("Error playing background music : \(error.localizedDescription)")
+        }
+    }
+    
+    private func stopBackgroundMusic() {
+        backgroundMusicPlayer?.stop()
+        backgroundMusicPlayer = nil
+    }
+    
+    func playSoundEffect(named fileName: String) {
+
+        guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else {
+            print("Could not find \(fileName).mp3")
+            return
+        }
+
+        do {
+            soundEffectPlayer = try AVAudioPlayer(contentsOf: url)
+            soundEffectPlayer?.prepareToPlay()
+            soundEffectPlayer?.play()
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
 }
 
 #Preview {
