@@ -12,11 +12,13 @@ struct ios_applicationApp: App {
     
     @State var locationManager = LocationManager()
     
+    @StateObject private var coinManager = CoinManager.shared
+    
     
     var body: some Scene {
         WindowGroup {
             MainTabView()
-                
+                .environmentObject(coinManager)
         }
     }
 }

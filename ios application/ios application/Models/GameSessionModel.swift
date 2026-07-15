@@ -23,6 +23,17 @@ enum GameMode: String, Codable, CaseIterable {
             return .yellow
         }
     }
+    
+    func coinsEarned(for score : Int) -> Int {
+        switch self {
+        case .tapFrenzy:
+            return max(5, score/2)
+        case .lightItUp:
+            return max(5, score)
+        case .quizRush:
+            return max(5, score * 3)
+        }
+    }
 }
 
 

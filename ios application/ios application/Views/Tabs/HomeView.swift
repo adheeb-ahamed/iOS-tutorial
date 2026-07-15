@@ -73,6 +73,8 @@ struct MainView: View {
                             }
 
                             Spacer()
+                            
+                            coinBalanceView()
 
                             Button {
                                 showProfileSetup = true

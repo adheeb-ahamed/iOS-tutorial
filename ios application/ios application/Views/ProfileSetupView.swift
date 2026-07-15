@@ -18,13 +18,20 @@ struct ProfileSetupView: View {
 
     @State private var currentStep = 1
 
-    private let avatars = [
-        "chess",
-        "car",
-        "football",
-        "fire",
-        "ninja",
-        "heart-love"
+    struct Avatar: Identifiable {
+        let id = UUID()
+        let image: String
+        let name: String
+        let price: Int
+    }
+    
+    private let avatars: [Avatar] = [
+        Avatar(image: "chess",       name: "Chess Master", price: 0),
+        Avatar(image: "car",         name: "Speed Racer",  price: 150),
+        Avatar(image: "football",    name: "Striker",      price: 250),
+        Avatar(image: "fire",        name: "Flame",        price: 400),
+        Avatar(image: "ninja",       name: "Shadow",       price: 600),
+        Avatar(image: "heart-love",  name: "Cupid",        price: 1000)
     ]
 
     private let columns = [
@@ -40,6 +47,23 @@ struct ProfileSetupView: View {
     private var currentRank: PlayerRank {
         PlayerRank.rank(for: totalGames)
     }
+    
+    @EnvironmentObject private var coinManager: CoinManager
+
+    @AppStorage("ownedAvatarIDs")
+    private var ownedAvatarIDsData = "chess"
+
+    @State private var showNotEnoughCoinsAlert = false
+    
+    private var ownedAvatarIDs: Set<String> {
+        Set(
+            ownedAvatarIDsData
+                .split(separator: ",")
+                .map(String.init)
+        )
+    }
+    
+    
 
     var body: some View {
         NavigationStack {
@@ -93,6 +117,16 @@ struct ProfileSetupView: View {
                 playerName = savedPlayerName
                 selectedAvatar = savedAvatar
             }
+        }
+        .alert(
+            "Not Enough Coins",
+            isPresented: $showNotEnoughCoinsAlert
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(
+                "Play more games to earn enough coins for this avatar."
+            )
         }
     }
 
@@ -315,11 +349,29 @@ struct ProfileSetupView: View {
                 .foregroundStyle(.white.opacity(0.7))
             }
 
+            
+            HStack {
+                Image(systemName: "dollarsign.circle.fill")
+                    .foregroundStyle(.yellow)
+
+                Text("\(coinManager.balance) Coins")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+
+                Spacer()
+            }
+            .padding()
+            .background(.white.opacity(0.12))
+            .clipShape(
+                RoundedRectangle(cornerRadius: 14)
+            )
+            
             LazyVGrid(
                 columns: columns,
                 spacing: 18
             ) {
-                ForEach(avatars, id: \.self) { avatar in
+                ForEach(avatars) { avatar in
                     avatarButton(avatar)
                 }
             }
@@ -365,48 +417,133 @@ struct ProfileSetupView: View {
         )
     }
 
-    private func avatarButton(
-        _ avatar: String
-    ) -> some View {
-        Button {
-            withAnimation(.spring()) {
-                selectedAvatar = avatar
+    private func avatarButton(_ avatar: Avatar) -> some View {
+
+        let isOwned = ownedAvatarIDs.contains(avatar.image)
+        let isSelected = selectedAvatar == avatar.image
+
+        return Button {
+            if isOwned {
+                withAnimation(.spring()) {
+                    selectedAvatar = avatar.image
+                }
+            } else {
+                purchaseAvatar(avatar)
             }
         } label: {
-            ZStack {
-                Circle()
-                    .fill(
-                        selectedAvatar == avatar
-                        ? Color.cyan.opacity(0.4)
-                        : Color.white.opacity(0.1)
-                    )
-                    .frame(width: 85, height: 85)
+            VStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            isSelected
+                            ? Color.cyan.opacity(0.4)
+                            : Color.white.opacity(0.1)
+                        )
+                        .frame(width: 85, height: 85)
 
-                Image(avatar)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 72, height: 72)
-                    .clipShape(Circle())
-            }
-            .overlay {
-                Circle()
-                    .stroke(
-                        selectedAvatar == avatar
-                        ? Color.white
-                        : Color.clear,
-                        lineWidth: 3
+                    Image(avatar.image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 72, height: 72)
+                        .clipShape(Circle())
+                        .saturation(isOwned ? 1 : 0)
+                        .opacity(isOwned ? 1 : 0.55)
+
+                    if !isOwned {
+                        Circle()
+                            .fill(.black.opacity(0.35))
+                            .frame(width: 72, height: 72)
+
+                        Image(systemName: "lock.fill")
+                            .font(.title2)
+                            .foregroundStyle(.white)
+                    }
+                }
+                .overlay {
+                    Circle()
+                        .stroke(
+                            isSelected
+                            ? Color.white
+                            : Color.clear,
+                            lineWidth: 3
+                        )
+                        .frame(width: 85, height: 85)
+                }
+                .overlay(alignment: .bottomTrailing) {
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.white, .cyan)
+                    }
+                }
+
+                Text(avatar.name)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+
+                if isSelected {
+                    Label(
+                        "Selected",
+                        systemImage: "checkmark.circle.fill"
                     )
-                    .frame(width: 85, height: 85)
-            }
-            .overlay(alignment: .bottomTrailing) {
-                if selectedAvatar == avatar {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.white, .cyan)
-                        .font(.title2)
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.cyan)
+
+                } else if isOwned {
+                    Label(
+                        "Owned",
+                        systemImage: "checkmark.seal.fill"
+                    )
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.green)
+
+                } else {
+                    HStack(spacing: 4) {
+                        Image(systemName: "dollarsign.circle.fill")
+
+                        Text("\(avatar.price)")
+                            .fontWeight(.bold)
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.yellow)
                 }
             }
         }
         .buttonStyle(.plain)
+    }
+    
+    @ViewBuilder
+    private func avatarStatusView(
+        avatar: Avatar,
+        isOwned: Bool,
+        isSelected: Bool
+    ) -> some View {
+        if isSelected {
+            Label("Selected", systemImage: "checkmark.circle.fill")
+                .font(.caption2)
+                .fontWeight(.bold)
+                .foregroundStyle(.cyan)
+        } else if isOwned {
+            Label("Owned", systemImage: "checkmark.seal.fill")
+                .font(.caption2)
+                .fontWeight(.bold)
+                .foregroundStyle(.green)
+        } else {
+            HStack(spacing: 4) {
+                Image(systemName: "dollarsign.circle.fill")
+                    .foregroundStyle(.yellow)
+
+                Text("\(avatar.price)")
+                    .fontWeight(.bold)
+                    .foregroundStyle(.yellow)
+            }
+            .font(.caption2)
+        }
     }
 
     private var cleanedPlayerName: String {
@@ -439,10 +576,42 @@ struct ProfileSetupView: View {
         savedAvatar = selectedAvatar
         dismiss()
     }
+    
+    private func purchaseAvatar(_ avatar: Avatar) {
+        // If already owned, just select it
+        if ownedAvatarIDs.contains(avatar.image) {
+            withAnimation(.spring()) {
+                selectedAvatar = avatar.image
+            }
+            return
+        }
+
+        // Check coin balance
+        if coinManager.balance < avatar.price {
+            showNotEnoughCoinsAlert = true
+            return
+        }
+
+        guard coinManager.spendCoins(amount: avatar.price) else {
+            showNotEnoughCoinsAlert = true
+            return
+        }
+
+        // Persist ownership in AppStorage as a comma-separated list
+        var ids = ownedAvatarIDs
+        ids.insert(avatar.image)
+        ownedAvatarIDsData = ids.sorted().joined(separator: ",")
+
+        // Select newly purchased avatar
+        withAnimation(.spring()) {
+            selectedAvatar = avatar.image
+        }
+    }
 }
 
-//#Preview {
-//    ProfileSetupView(
-//        manager: GameSessionManager()
-//    )
-//}
+#Preview {
+    ProfileSetupView(
+        manager: GameSessionManager.shared
+    )
+    .environmentObject(CoinManager.shared)
+}
