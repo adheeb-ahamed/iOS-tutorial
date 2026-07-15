@@ -22,6 +22,16 @@ struct MainView: View {
     @StateObject private var challengeManager = DailyChallengeManager()
     
     
+    //This is to create a circle at the top right corner
+    @AppStorage("playerName") private var playerName = ""
+    @AppStorage("selectedAvatar") private var selectedAvatar = "person.crop.circle.fill"
+    
+    @State private var showProfileSetup = false
+    
+    
+    @ObservedObject var manager: GameSessionManager
+    
+    
     
     var body: some View {
         NavigationStack {
@@ -44,17 +54,51 @@ struct MainView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 20) {
                         
-                        // Header Title Section
-                        VStack(spacing: 4) {
-                            Text("Velocity Game Hub")
-                                .font(.system(.largeTitle, design: .rounded))
-                                .fontWeight(.black)
-                                .foregroundColor(.primary)
-                            
-                            Text("Simple light minded games")
+                        // Header Title and Profile Section
+                        HStack(spacing: 15) {
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Velocity Game Hub")
+                                    .font(.system(.title, design: .rounded))
+                                    .fontWeight(.black)
+                                    .foregroundStyle(.white)
+
+                                Text(
+                                    playerName.isEmpty
+                                    ? "Simple light minded games"
+                                    : "Welcome, \(playerName)"
+                                )
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.white.opacity(0.75))
+                            }
+
+                            Spacer()
+
+                            Button {
+                                showProfileSetup = true
+                            } label: {
+                                Image(selectedAvatar)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                                    .overlay {
+                                        Circle()
+                                            .stroke(
+                                                Color.white.opacity(0.8),
+                                                lineWidth: 2
+                                            )
+                                    }
+                                    .shadow(
+                                        color: .black.opacity(0.25),
+                                        radius: 5,
+                                        x: 0,
+                                        y: 3
+                                    )
+                            }
+                            .buttonStyle(.plain)
                         }
+                        .padding(.horizontal)
                         .padding(.top, 20)
                         .padding(.bottom, 10)
                         
@@ -117,6 +161,9 @@ struct MainView: View {
             .navigationDestination(isPresented: $startQuizRush) {
                 QuizSettingsView()
             }
+            .sheet(isPresented: $showProfileSetup){
+                ProfileSetupView(manager: manager)
+            }
             .onAppear {
                 locationManager.requestPermission()
                 challengeManager.checkChallenge()
@@ -126,6 +173,7 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+    MainView(
+        manager: GameSessionManager.shared
+    )
 }
-
