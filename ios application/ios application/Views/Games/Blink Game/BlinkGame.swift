@@ -30,6 +30,8 @@ struct BlinkGame: View {
     ]
 
     @State private var previousLevel: Int = 1
+    
+//    @State private var audioPlayer: AVAudioPlayer?
 
     @State private var cancellable: Cancellable?
 
@@ -375,6 +377,19 @@ struct BlinkGame: View {
         )
         GameSessionManager.shared.saveSessions(session)
     }
+    
+//    func playSound(named SoundName: String) {
+//        guard let url = Bundle.main.url(forResource: SoundName, withExtension: "mp3") else {
+//            print("Sound not found")
+//            return
+//        }
+//        do {
+//            audioPlayer = try AVAudioPlayer(contentsOf: url)
+//            audioPlayer?.play()
+//        } catch {
+//            print("error playing sound : \(error)")
+//        }
+//    }
 }
 
 #Preview {

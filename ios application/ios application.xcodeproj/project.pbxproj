@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		D72FA0422FD431CB006646E6 /* ios application.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ios application.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D72FA0422FD431CB006646E6 /* Velocity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Velocity.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -40,7 +40,7 @@
 		D72FA0432FD431CB006646E6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D72FA0422FD431CB006646E6 /* ios application.app */,
+				D72FA0422FD431CB006646E6 /* Velocity.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D72FA0412FD431CB006646E6 /* ios application */ = {
+		D72FA0412FD431CB006646E6 /* Velocity */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D72FA04D2FD431CC006646E6 /* Build configuration list for PBXNativeTarget "ios application" */;
+			buildConfigurationList = D72FA04D2FD431CC006646E6 /* Build configuration list for PBXNativeTarget "Velocity" */;
 			buildPhases = (
 				D72FA03E2FD431CB006646E6 /* Sources */,
 				D72FA03F2FD431CB006646E6 /* Frameworks */,
@@ -63,11 +63,11 @@
 			fileSystemSynchronizedGroups = (
 				D72FA0442FD431CB006646E6 /* ios application */,
 			);
-			name = "ios application";
+			name = Velocity;
 			packageProductDependencies = (
 			);
 			productName = "ios application";
-			productReference = D72FA0422FD431CB006646E6 /* ios application.app */;
+			productReference = D72FA0422FD431CB006646E6 /* Velocity.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D72FA0412FD431CB006646E6 /* ios application */,
+				D72FA0412FD431CB006646E6 /* Velocity */,
 			);
 		};
 /* End PBXProject section */
@@ -251,6 +251,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8H5WMCKS8X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to save where game sessions were played.";
@@ -259,6 +260,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -283,6 +285,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8H5WMCKS8X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to save where game sessions were played.";
@@ -291,6 +294,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -320,7 +324,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D72FA04D2FD431CC006646E6 /* Build configuration list for PBXNativeTarget "ios application" */ = {
+		D72FA04D2FD431CC006646E6 /* Build configuration list for PBXNativeTarget "Velocity" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D72FA04E2FD431CC006646E6 /* Debug */,
