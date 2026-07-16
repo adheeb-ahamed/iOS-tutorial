@@ -10,6 +10,6 @@ import MapKit
 
 struct ProvinceShape: Identifiable {
     let id = UUID()
-    let name: String
+    let province : SriLankaProvince
     let coordinates: [CLLocationCoordinate2D]
 }

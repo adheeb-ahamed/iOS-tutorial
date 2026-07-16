@@ -13,6 +13,8 @@ struct QuizResultView: View {
     var gameMode: GameMode
     let total: Int
     let restartAction: () -> Void
+    
+    @State private var unlockedProvince: SriLankaProvince?
 
     var shareText: String {
         """
@@ -89,6 +91,31 @@ struct QuizResultView: View {
                 }
                 .padding(.horizontal, 24)
             }
+        }.alert(
+            "New Province Discovered!",
+            isPresented: Binding(
+                get: {
+                    unlockedProvince != nil
+                },
+                set: { isPresented in
+                    if !isPresented {
+                        unlockedProvince = nil
+                    }
+                }
+            ),
+            presenting: unlockedProvince
+        ) { _ in
+            Button("Continue") {
+                unlockedProvince = nil
+            }
+        } message: { province in
+            Text(
+                """
+                You explored \(province.rawValue) Province.
+
+                You earned 200 coins!
+                """
+            )
         }
     }
 

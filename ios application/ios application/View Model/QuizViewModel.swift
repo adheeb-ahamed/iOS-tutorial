@@ -20,6 +20,8 @@ enum ViewState {
 
 class QuizViewModel: ObservableObject {
     private let locationManager = LocationManager.shared
+    
+    @Published private var unlockedProvince: SriLankaProvince?
 
     @Published var questions: [Question] = []
     @Published var currentIndex: Int = 0
@@ -140,7 +142,11 @@ class QuizViewModel: ObservableObject {
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
-        GameSessionManager.shared.saveSessions(session)
+        let result = GameSessionManager.shared.saveSessions(session)
+        
+        unlockedProvince = result
+        
+        
     }
     
     private var quizTimer: Timer?

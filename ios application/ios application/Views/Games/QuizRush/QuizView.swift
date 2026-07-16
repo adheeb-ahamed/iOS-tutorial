@@ -11,6 +11,8 @@ struct QuizView: View {
     @StateObject var vm = QuizViewModel()
     
     @StateObject private var soundManager = QuizSoundManager.shared
+    
+    
 
     @State private var hasStartedQuizAudio = false
     @State private var suspenseRestartTask: Task<Void, Never>?
@@ -179,6 +181,7 @@ struct QuizView: View {
             suspenseRestartTask?.cancel()
             soundManager.stopAllSounds()
         }
+        
         
     }
 

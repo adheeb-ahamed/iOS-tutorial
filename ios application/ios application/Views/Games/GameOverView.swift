@@ -3,6 +3,7 @@ import SwiftUI
 struct GameOverView: View {
     var score: Int
     var gameMode: GameMode
+    var unlockedProvince: SriLankaProvince?
     var onRestart: () -> Void
     var onHome: () -> Void
 
@@ -10,6 +11,8 @@ struct GameOverView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var hasAwardedCoins = false
+    
+    @State private var provinceForAlert: SriLankaProvince?
 
     private var coinsEarned: Int {
         gameMode.coinsEarned(for: score)
@@ -39,9 +42,36 @@ struct GameOverView: View {
                 actionButtons
             }
         }
+        .alert(
+            "New Province Discovered!",
+            isPresented: Binding(
+                get: {
+                    provinceForAlert != nil
+                },
+                set: { isPresented in
+                    if !isPresented {
+                        provinceForAlert = nil
+                    }
+                }
+            ),
+            presenting: provinceForAlert
+        ) { _ in
+            Button("Continue") {
+                provinceForAlert = nil
+            }
+        } message: { province in
+            Text(
+                """
+                You explored \(province.rawValue) Province.
+
+                You earned 200 coins!
+                """
+            )
+        }
         .navigationBarBackButtonHidden(true)
         .onAppear {
             awardCoins()
+            provinceForAlert = unlockedProvince
         }
     }
 

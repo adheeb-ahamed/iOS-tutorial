@@ -23,6 +23,8 @@ struct ContentView: View {
     @State private var yPosition: CGFloat = 350
 
     @State private var fontSize: CGFloat = 30
+    
+    @State private var unlockedProvince: SriLankaProvince?
 
     @State private var game = 30
 
@@ -190,6 +192,7 @@ struct ContentView: View {
                 }
             )
         }
+        
     }
 
     private func metricCapsule(label: String, value: String) -> some View {
@@ -309,7 +312,10 @@ struct ContentView: View {
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
-        GameSessionManager.shared.saveSessions(session)
+        let result  = ProvinceExplorerManager.shared.newlyUnlockedProvince
+        
+        unlockedProvince = result
+
     }
 
     func finishGame() {
@@ -321,7 +327,10 @@ struct ContentView: View {
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
-        GameSessionManager.shared.saveSessions(session)
+        let result = ProvinceExplorerManager.shared.newlyUnlockedProvince
+        
+        unlockedProvince = result
+
     }
 }
 

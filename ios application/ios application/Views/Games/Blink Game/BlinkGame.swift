@@ -32,6 +32,8 @@ struct BlinkGame: View {
     
     @State private var previousLevel: Int = 1
     
+    @State private var unlockedProvince: SriLankaProvince?
+    
     @State private var backgroundMusicPlayer: AVAudioPlayer?
     
     @State private var soundEffectPlayer: AVAudioPlayer?
@@ -200,7 +202,9 @@ struct BlinkGame: View {
                 }
             )
         }
+        
     }
+    
     
     private var topMetricsCard: some View {
         HStack(spacing: 0) {
@@ -373,7 +377,11 @@ struct BlinkGame: View {
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
-        GameSessionManager.shared.saveSessions(session)
+        let result = GameSessionManager.shared.saveSessions(session)
+        
+        unlockedProvince = result
+
+        
     }
     
     func finishGame() {
@@ -385,7 +393,10 @@ struct BlinkGame: View {
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
-        GameSessionManager.shared.saveSessions(session)
+        let result = GameSessionManager.shared.saveSessions(session)
+        
+        unlockedProvince = result
+
     }
     
     private func playBackgroundMusic() {
