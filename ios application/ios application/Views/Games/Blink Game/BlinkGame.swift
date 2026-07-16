@@ -116,12 +116,13 @@ struct BlinkGame: View {
                                 
                                 if hearts == 0 {
                                     isTimerRunning = false
+                                    stopBackgroundMusic()
                                     endGame()
-                                    
+
                                     if scoreResult > highScore {
                                         highScore = scoreResult
                                     }
-                                    
+
                                     goToGameover = true
                                 }
                             }
@@ -154,13 +155,14 @@ struct BlinkGame: View {
             guard isTimerRunning && timerLeft > 0 else {
                 if timerLeft == 0 {
                     isTimerRunning = false
+                    stopBackgroundMusic()
                     endGame()
                     stopTimer()
-                    
+
                     if scoreResult > highScore {
                         highScore = scoreResult
                     }
-                    
+
                     DispatchQueue.main.async {
                         goToGameover = true
                     }
@@ -192,6 +194,7 @@ struct BlinkGame: View {
             GameOverView(
                 score: scoreResult,
                 gameMode: .lightItUp,
+                unlockedProvince: unlockedProvince,
                 onRestart: {
                     resetGame()
                     goToGameover = false
@@ -326,9 +329,11 @@ struct BlinkGame: View {
         level = 1
         isTimerRunning = true
         hasEndedGame = false
+        unlockedProvince = nil
         setupCards(for: level)
         timerLeft = 60
         hearts = 3
+        lastLightUpdate = .now
     }
     
     func startTimer() {
@@ -367,9 +372,9 @@ struct BlinkGame: View {
         guard !hasEndedGame else {
             return
         }
-        
+
         hasEndedGame = true
-        
+
         let session = GameSessionModel(
             mode: .lightItUp,
             score: scoreResult,
@@ -377,26 +382,13 @@ struct BlinkGame: View {
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
-        let result = GameSessionManager.shared.saveSessions(session)
-        
-        unlockedProvince = result
 
-        
-    }
-    
-    func finishGame() {
-        let session = GameSessionModel(
-            id: UUID(),
-            mode: .tapFrenzy,
-            score: scoreResult,
-            timestamp: Date(),
-            latitude: locationManager.latitude,
-            longitude: locationManager.longitude
+        unlockedProvince = GameSessionManager.shared.saveSessions(session)
+
+        print(
+            "Light It Up unlocked province:",
+            unlockedProvince?.rawValue ?? "nil"
         )
-        let result = GameSessionManager.shared.saveSessions(session)
-        
-        unlockedProvince = result
-
     }
     
     private func playBackgroundMusic() {

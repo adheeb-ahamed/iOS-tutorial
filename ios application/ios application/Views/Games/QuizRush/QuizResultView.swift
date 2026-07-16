@@ -14,7 +14,9 @@ struct QuizResultView: View {
     let total: Int
     let restartAction: () -> Void
     
-    @State private var unlockedProvince: SriLankaProvince?
+    let unlockedProvince: SriLankaProvince?
+    
+    @State private var provinceForAlert: SriLankaProvince?
 
     var shareText: String {
         """
@@ -94,28 +96,33 @@ struct QuizResultView: View {
         }.alert(
             "New Province Discovered!",
             isPresented: Binding(
-                get: {
-                    unlockedProvince != nil
-                },
-                set: { isPresented in
-                    if !isPresented {
-                        unlockedProvince = nil
-                    }
-                }
+                get: { provinceForAlert != nil },
+                set: { newValue in if !newValue { provinceForAlert = nil } }
             ),
-            presenting: unlockedProvince
-        ) { _ in
-            Button("Continue") {
-                unlockedProvince = nil
-            }
-        } message: { province in
-            Text(
-                """
-                You explored \(province.rawValue) Province.
+            actions: {
+                Button("Continue", role: .cancel) {
+                    provinceForAlert = nil
+                }
+            },
+            message: {
+                if let province = provinceForAlert {
+                    Text(
+                        """
+                        You explored \(province.rawValue) Province.
 
-                You earned 200 coins!
-                """
-            )
+                        You earned 200 coins!
+                        """
+                    )
+                }
+            }
+        )
+        .onAppear {
+            DispatchQueue.main.async {
+                provinceForAlert = unlockedProvince
+            }
+        }
+        .onChange(of: unlockedProvince) { _, newProvince in
+            provinceForAlert = newProvince
         }
     }
 

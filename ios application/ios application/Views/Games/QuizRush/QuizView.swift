@@ -12,10 +12,14 @@ struct QuizView: View {
     
     @StateObject private var soundManager = QuizSoundManager.shared
     
-    
+    @State private var unlockedProvince: SriLankaProvince?
 
     @State private var hasStartedQuizAudio = false
     @State private var suspenseRestartTask: Task<Void, Never>?
+    
+    @State private var hasSavedQuizSession = false
+    
+    
     
     let settings: QuizSettings
 
@@ -45,16 +49,38 @@ struct QuizView: View {
                 QuizResultView(
                     score: vm.score,
                     gameMode: .quizRush,
-                    total: vm.questions.count
-                ) {
-                    vm.resetGame()
-                    vm.loadQuestions(settings: settings)
+                    total: vm.questions.count,
+                    restartAction: {
+                        unlockedProvince = nil
+                        hasSavedQuizSession = false
+
+                        vm.resetGame()
+                        vm.loadQuestions(settings: settings)
+                    },
+                    unlockedProvince: unlockedProvince
+                )
+                .onAppear {
+                    guard !hasSavedQuizSession else {
+                        return
+                    }
+
+                    hasSavedQuizSession = true
+                    finishQuiz()
                 }
             }
         }
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .task {
             vm.loadQuestions(settings: settings)
+        }
+        .onChange(of: vm.viewState) { _, newState in
+            guard case .finished = newState,
+                  !hasSavedQuizSession else {
+                return
+            }
+
+            hasSavedQuizSession = true
+            finishQuiz()
         }
         .toolbar(.hidden, for: .tabBar)
     }
@@ -201,6 +227,24 @@ struct QuizView: View {
             Capsule()
                 .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 .shadow(color: .black.opacity(0.06), radius: 3, x: 0, y: 2)
+        )
+    }
+    
+    private func finishQuiz() {
+        let session = GameSessionModel(
+            mode: .quizRush,
+            score: vm.score,
+            timestamp: Date(),
+            latitude: locationManager.latitude,
+            longitude: locationManager.longitude
+        )
+
+        unlockedProvince =
+            GameSessionManager.shared.saveSessions(session)
+
+        print(
+            "Quiz unlocked province:",
+            unlockedProvince?.rawValue ?? "nil"
         )
     }
 

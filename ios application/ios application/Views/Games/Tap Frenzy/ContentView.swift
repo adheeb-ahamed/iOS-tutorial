@@ -182,6 +182,7 @@ struct ContentView: View {
             GameOverView(
                 score: count,
                 gameMode: .tapFrenzy,
+                unlockedProvince: unlockedProvince,
                 onRestart: {
                     resetGame()
                     goToGameover = false
@@ -312,26 +313,15 @@ struct ContentView: View {
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
-        let result  = ProvinceExplorerManager.shared.newlyUnlockedProvince
-        
-        unlockedProvince = result
 
-    }
+        unlockedProvince = GameSessionManager.shared.saveSessions(session)
 
-    func finishGame() {
-        let session = GameSessionModel(
-            id: UUID(),
-            mode: .tapFrenzy,
-            score: count,
-            timestamp: Date(),
-            latitude: locationManager.latitude,
-            longitude: locationManager.longitude
+        print(
+            "Unlocked province:",
+            unlockedProvince?.rawValue ?? "nil"
         )
-        let result = ProvinceExplorerManager.shared.newlyUnlockedProvince
-        
-        unlockedProvince = result
-
     }
+
 }
 
 #Preview {

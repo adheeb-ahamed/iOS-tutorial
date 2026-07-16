@@ -3,7 +3,7 @@ import SwiftUI
 struct GameOverView: View {
     var score: Int
     var gameMode: GameMode
-    var unlockedProvince: SriLankaProvince?
+    var unlockedProvince: SriLankaProvince? = nil
     var onRestart: () -> Void
     var onHome: () -> Void
 
@@ -13,6 +13,7 @@ struct GameOverView: View {
     @State private var hasAwardedCoins = false
     
     @State private var provinceForAlert: SriLankaProvince?
+    
 
     private var coinsEarned: Int {
         gameMode.coinsEarned(for: score)
