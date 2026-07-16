@@ -12,16 +12,20 @@ import MapKit
 
 final class ProvinceLocationService {
 
-    func province(
+    private let provinces = ProvinceGeoJSONLoader.load()
+
+    func provinceName(
         for coordinate: CLLocationCoordinate2D
     ) -> SriLankaProvince? {
 
-        for province in ProvinceData.provinces {
-            if contains(
-                coordinate,
-                inside: province.coordinates
-            ) {
-                return province.province
+        for province in provinces {
+            for polygon in province.polygons {
+                if contains(
+                    coordinate,
+                    inside: polygon
+                ) {
+                    return province.province
+                }
             }
         }
 
@@ -30,28 +34,14 @@ final class ProvinceLocationService {
 
     private func contains(
         _ coordinate: CLLocationCoordinate2D,
-        inside polygonCoordinates: [CLLocationCoordinate2D]
+        inside polygon: MKPolygon
     ) -> Bool {
-
-        guard polygonCoordinates.count >= 3 else {
-            return false
-        }
-
-        let polygon = MKPolygon(
-            coordinates: polygonCoordinates,
-            count: polygonCoordinates.count
-        )
 
         let renderer = MKPolygonRenderer(polygon: polygon)
 
-        //Converts the latitude and longitude to mapkits
         let mapPoint = MKMapPoint(coordinate)
+        let rendererPoint = renderer.point(for: mapPoint)
 
-        let rendererPoint = renderer.point(
-            for: mapPoint
-        )
-
-        //Check if the location is inside the point
         return renderer.path.contains(rendererPoint)
     }
 }

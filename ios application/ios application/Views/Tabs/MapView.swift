@@ -5,6 +5,8 @@ struct MapView: View {
     @StateObject private var manager = GameSessionManager.shared
     @StateObject private var explorerManager = ProvinceExplorerManager.shared
     
+    private let provinceShapes = ProvinceGeoJSONLoader.load()
+    
     @State private var provinceForAlert: SriLankaProvince?
 
     @State private var cameraPosition: MapCameraPosition = .region(
@@ -15,19 +17,66 @@ struct MapView: View {
     )
 
     @State private var selectedLocation: LocationGroup?
+    
+    private var latestSession: GameSessionModel? {
+        manager.sessions
+            .filter {
+                $0.latitude != 0 &&
+                $0.longitude != 0
+            }
+            .max {
+                $0.timestamp < $1.timestamp
+            }
+    }
 
-    private let provinceShapes = ProvinceData.provinces
 
     // Break out grouped locations to help the type-checker
     private var groupedLocations: [LocationGroup] {
-        let grouped = Dictionary(grouping: manager.sessions) { session in
+        let validSessions = manager.sessions.filter {
+            $0.latitude != 0 &&
+            $0.longitude != 0
+        }
+
+        let grouped = Dictionary(
+            grouping: validSessions
+        ) { session in
             "\(session.latitude),\(session.longitude)"
         }
+
         return grouped.compactMap { _, sessions in
-            guard let first = sessions.first else { return nil }
+            guard let first = sessions.first else {
+                return nil
+            }
+
             return LocationGroup(
-                coordinates: CLLocationCoordinate2D(latitude: first.latitude, longitude: first.longitude),
+                coordinates: CLLocationCoordinate2D(
+                    latitude: first.latitude,
+                    longitude: first.longitude
+                ),
                 sessions: sessions
+            )
+        }
+    }
+    
+    private func moveCameraToLatestGame() {
+        guard let latestSession else {
+            return
+        }
+
+        let coordinate = CLLocationCoordinate2D(
+            latitude: latestSession.latitude,
+            longitude: latestSession.longitude
+        )
+
+        withAnimation {
+            cameraPosition = .region(
+                MKCoordinateRegion(
+                    center: coordinate,
+                    span: MKCoordinateSpan(
+                        latitudeDelta: 0.15,
+                        longitudeDelta: 0.15
+                    )
+                )
             )
         }
     }
@@ -35,14 +84,20 @@ struct MapView: View {
     // Extract province overlays to reduce complexity in the Map builder
     @MapContentBuilder
     private var provinceOverlays: some MapContent {
-        ForEach(provinceShapes) { province in
-            MapPolygon(coordinates: province.coordinates)
-                .foregroundStyle(
-                    explorerManager.isExplored(province.province)
-                    ? Color.clear
-                    : Color.gray.opacity(0.65)
-                )
-                .stroke(Color.white.opacity(0.8), lineWidth: 1.5)
+        ForEach(provinceShapes) { provinceShape in
+            if !explorerManager.isExplored(provinceShape.province) {
+                ForEach(
+                    Array(provinceShape.polygons.enumerated()),
+                    id: \.offset
+                ) { _, polygon in
+                    MapPolygon(polygon)
+                        .foregroundStyle(Color.gray.opacity(0.65))
+                        .stroke(
+                            Color.white.opacity(0.8),
+                            lineWidth: 1.2
+                        )
+                }
+            }
         }
     }
 
@@ -59,6 +114,8 @@ struct MapView: View {
             .tag(location)
         }
     }
+    
+    
 
     var body: some View {
         ZStack {
@@ -105,6 +162,9 @@ struct MapView: View {
             }
         }
         .navigationTitle("Map")
+        .onAppear {
+            moveCameraToLatestGame()
+        }
         .onReceive(
             explorerManager.$newlyUnlockedProvince
         ) { province in
@@ -117,3 +177,4 @@ struct MapView: View {
         
     }
 }
+

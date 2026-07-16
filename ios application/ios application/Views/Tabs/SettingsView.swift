@@ -200,6 +200,9 @@ struct SettingsView: View {
 
     private func eraseAllData() {
         GameSessionManager.shared.clearSessions()
+        
+        // Clear explored provinces
+        ProvinceExplorerManager.shared.clearExploredProvinces()
 
         UserDefaults.standard.removeObject(forKey: "lightItUpHighScore")
         UserDefaults.standard.removeObject(forKey: "TapGameHighScore")

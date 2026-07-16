@@ -1,5 +1,3 @@
-//To identify which provinces that are explored
-
 import Foundation
 import Combine
 import MapKit
@@ -9,15 +7,17 @@ final class ProvinceExplorerManager: ObservableObject {
     static let shared = ProvinceExplorerManager()
 
     @Published private(set) var exploredProvinceNames: Set<SriLankaProvince> = []
-    
+
     @Published private(set) var newlyUnlockedProvince: SriLankaProvince?
 
     private let storageKey = "exploredProvinceNames"
 
+    private let locationService = ProvinceLocationService()
+
     private init() {
         loadExploredProvinces()
     }
-    
+
     @discardableResult
     func unlockProvince(named province: SriLankaProvince) -> Bool {
         guard !exploredProvinceNames.contains(province) else {
@@ -25,6 +25,8 @@ final class ProvinceExplorerManager: ObservableObject {
         }
 
         exploredProvinceNames.insert(province)
+        newlyUnlockedProvince = province
+
         saveExploredProvinces()
 
         return true
@@ -35,7 +37,7 @@ final class ProvinceExplorerManager: ObservableObject {
     }
 
     private func saveExploredProvinces() {
-        let values = exploredProvinceNames.map{
+        let values = exploredProvinceNames.map {
             $0.rawValue
         }
 
@@ -45,13 +47,18 @@ final class ProvinceExplorerManager: ObservableObject {
         )
     }
 
-    
-    //Check if this province was already explored or not
     private func loadExploredProvinces() {
-        let savedValues = UserDefaults.standard.stringArray(forKey: storageKey) ?? []
-        exploredProvinceNames = Set(savedValues.compactMap { SriLankaProvince(rawValue: $0) })
+        let savedValues = UserDefaults.standard.stringArray(
+            forKey: storageKey
+        ) ?? []
+
+        exploredProvinceNames = Set(
+            savedValues.compactMap {
+                SriLankaProvince(rawValue: $0)
+            }
+        )
     }
-    
+
     var exploredCount: Int {
         exploredProvinceNames.count
     }
@@ -68,10 +75,11 @@ final class ProvinceExplorerManager: ObservableObject {
         return Double(exploredCount) /
             Double(totalProvinceCount)
     }
-    
-    
-    
-    func unlockProvince(latitude: Double,longitude: Double) -> SriLankaProvince? {
+
+    func unlockProvince(
+        latitude: Double,
+        longitude: Double
+    ) -> SriLankaProvince? {
 
         guard latitude != 0,
               longitude != 0 else {
@@ -84,36 +92,36 @@ final class ProvinceExplorerManager: ObservableObject {
             longitude: longitude
         )
 
-        let locationService = ProvinceLocationService()
-
-        guard let provinceName =
-            locationService.province(for: coordinate)
-        else {
+        guard let province = locationService.provinceName(
+            for: coordinate
+        ) else {
             print("No province found for this location.")
             return nil
         }
 
-        let wasNewlyUnlocked = unlockProvince(named: provinceName)
+        let wasNewlyUnlocked = unlockProvince(
+            named: province
+        )
 
         if wasNewlyUnlocked {
-            print("New province explored: \(provinceName)")
-            return provinceName
+            print("New province explored: \(province.rawValue)")
+            return province
         }
 
-        print("\(provinceName) was already explored.")
+        print("\(province.rawValue) was already explored.")
         return nil
     }
-    
+
     func clearNewlyUnlockedProvince() {
         newlyUnlockedProvince = nil
     }
-    
 
     func clearExploredProvinces() {
-            exploredProvinceNames.removeAll()
+        exploredProvinceNames.removeAll()
+        newlyUnlockedProvince = nil
 
-            UserDefaults.standard.removeObject(
-                forKey: storageKey
-            )
-        }
+        UserDefaults.standard.removeObject(
+            forKey: storageKey
+        )
+    }
 }
