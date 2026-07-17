@@ -245,6 +245,6 @@ This project uses third-party audio assets for educational purposes. All copyrig
 
 ---
 
-# Refelection
+# Reflection
 
 I first started this module without any experience using swift. Each week our lecturer gave us games to develop and finally to create a fully fledged application. This was a huge learning experinece. Day by day my knowledge in Swift increased learned new concepts. It took time to convert the ideas to code. Mistakes helped us to get better. It started with how to create a button on the swift to finally creating a full on application with three functional games. I still could improve on my UI honestly. But I feel like I'm satisfied with the output. One of the single hardest thing was not having a Mac device, and using the device that is available on the campus. Coming to campus every single day and coding till the security guard kicks us out. These five weeks have been a great experience. 
