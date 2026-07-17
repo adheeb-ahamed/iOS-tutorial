@@ -22,35 +22,101 @@ struct MainView: View {
     @StateObject private var challengeManager = DailyChallengeManager()
     
     
+    //This is to create a circle at the top right corner
+    @AppStorage("playerName") private var playerName = ""
+    @AppStorage("selectedAvatar") private var selectedAvatar = "person.crop.circle.fill"
+    
+    @State private var showProfileSetup = false
+    
+    
+    @ObservedObject var manager: GameSessionManager
+    
+    
     
     var body: some View {
         NavigationStack {
             ZStack {
                 // Dynamic Game Hub Themed Background
-                Color(uiColor: .systemGroupedBackground) // Or use a tiled background Image asset
+//                Color(uiColor: .systemGroupedBackground) // Or use a tiled background Image asset
+//                    .ignoresSafeArea()
+                
+                LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.2),
+                            Color.blue.opacity(0.7),
+                            Color.cyan.opacity(0.4)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                     .ignoresSafeArea()
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 20) {
                         
-                        // Header Title Section
-                        VStack(spacing: 4) {
-                            Text("Velocity Game Hub")
-                                .font(.system(.largeTitle, design: .rounded))
-                                .fontWeight(.black)
-                                .foregroundColor(.primary)
-                            
-                            Text("Simple light minded games")
+                        // Header Title and Profile Section
+                        HStack(spacing: 15) {
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Velocity Game Hub")
+                                    .font(.system(.title, design: .rounded))
+                                    .fontWeight(.black)
+                                    .foregroundStyle(.white)
+
+                                Text(
+                                    playerName.isEmpty
+                                    ? "Simple light minded games"
+                                    : "Welcome, \(playerName)"
+                                )
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.white.opacity(0.75))
+                            }
+
+                            Spacer()
+                            
+                            coinBalanceView()
+
+                            Button {
+                                showProfileSetup = true
+                            } label: {
+                                Image(selectedAvatar)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                                    .overlay {
+                                        Circle()
+                                            .stroke(
+                                                Color.white.opacity(0.8),
+                                                lineWidth: 2
+                                            )
+                                    }
+                                    .shadow(
+                                        color: .black.opacity(0.25),
+                                        radius: 5,
+                                        x: 0,
+                                        y: 3
+                                    )
+                            }
+                            .buttonStyle(.plain)
                         }
+                        .padding(.horizontal)
                         .padding(.top, 20)
                         .padding(.bottom, 10)
                         
                         // Dynamic Daily Challenge banner injection if active
                         if let challenge = challengeManager.todaysChallenge {
-                            DailyChallengeBanner(challenge: challenge, manager: challengeManager)
-                                .padding(.horizontal)
+                            DailyChallengeBanner(challenge: challenge, manager: challengeManager) { mode in
+                                switch mode {
+                                case .tapFrenzy:
+                                    startTapGame = true
+                                case .lightItUp:
+                                    startLightItUpGame = true
+                                case .quizRush:
+                                    startQuizRush = true
+                                }
+                            }
+                            .padding(.horizontal)
                         }
                         
                         // Main Scrollable List of Game Cards
@@ -58,7 +124,7 @@ struct MainView: View {
                             GameCardView(
                                 title: "Tap Frenzy",
                                 subtitle: "Tap the button & score!",
-                                backgroundImageName: "tapImage"
+                                backgroundImageName: "TapFrenzy"
                             ) {
                                 print("Tap Frenzy tapped!")
                                 startTapGame = true
@@ -76,14 +142,13 @@ struct MainView: View {
                             GameCardView(
                                 title: "Quiz Rush",
                                 subtitle: "Answer fast, earn big points!",
-                                backgroundImageName: "tapImage" // Bind your asset here
+                                backgroundImageName: "quiz-image" // Bind your asset here
                             ) {
                                 print("Quiz Rush tapped!")
                                 startQuizRush = true
                             }
                         }
                         .padding(.horizontal)
-                        
                         // Padding cushion to prevent cards getting hidden by your custom Navigation/Tab Bars
                         Spacer(minLength: 100)
                     }
@@ -96,7 +161,10 @@ struct MainView: View {
                 BlinkGame(showGame: $startLightItUpGame)
             }
             .navigationDestination(isPresented: $startQuizRush) {
-                QuizView(showGame: $startQuizRush)
+                QuizSettingsView()
+            }
+            .sheet(isPresented: $showProfileSetup){
+                ProfileSetupView(manager: manager)
             }
             .onAppear {
                 locationManager.requestPermission()
@@ -107,6 +175,7 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+    MainView(
+        manager: GameSessionManager.shared
+    )
 }
-

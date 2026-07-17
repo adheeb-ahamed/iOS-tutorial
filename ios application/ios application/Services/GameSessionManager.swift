@@ -25,18 +25,26 @@ class GameSessionManager : ObservableObject {
         loadSessions()
     }
     
-    
-    func saveSessions(_ session : GameSessionModel){
+    //This is where you add session and the amount you gain once you unlock a province 
+    func saveSessions(_ session: GameSessionModel) -> SriLankaProvince? {
+
+        sessions.append(session)
+
+        let newlyUnlockedProvince =
+            ProvinceExplorerManager.shared.unlockProvince(
+                latitude: session.latitude,
+                longitude: session.longitude
+            )
         
-        sessions.append (session)
-        
+
         do {
             let data = try JSONEncoder().encode(sessions)
             UserDefaults.standard.set(data, forKey: key)
         } catch {
-            print("Failed to save session: ", error)
+            print("Failed to save session:", error)
         }
         
+        return newlyUnlockedProvince
     }
     
     
@@ -53,6 +61,11 @@ class GameSessionManager : ObservableObject {
         } catch {
             print("Failed to load the session", error)
         }
+    }
+    
+    func clearSessions() {
+        sessions.removeAll()
+        UserDefaults.standard.removeObject(forKey: key)
     }
     
 //    func addSession(_ session: GameSessionModel) {

@@ -22,6 +22,8 @@ struct GameCardView: View {
                     .resizable()
                     .scaledToFill()
                     .frame(height: 180)
+                    .opacity(0.6)
+                    .brightness(-0.3)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
                     .overlay(
                         // Gives it a clean outer border edge like your game hub reference
@@ -29,6 +31,7 @@ struct GameCardView: View {
                             .stroke(Color.white, lineWidth: 3)
                     )
                     .shadow(color: Color.black.opacity(0.3), radius: 6, x: 0, y: 4)
+                
                 
                 // 2. Text Content & Action Button Layout Overlay
                 HStack {

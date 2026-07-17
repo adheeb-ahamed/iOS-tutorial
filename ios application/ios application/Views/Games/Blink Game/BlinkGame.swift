@@ -1,347 +1,288 @@
-//
-//  BlinkGame.swift
-//  ios application
-//
-//  Created by Student 3 on 2026-06-17.
-//
-
 import SwiftUI
-import Combine
 
 struct BlinkGame: View {
-    
-    @State private var scoreResult: Int = 0
-    
-    @State private var level : Int = 1
-    
-    @State var locationManager = LocationManager.shared
-    
-    @State private var hasEndedGame = false
-    
-    //To create a timer
-    @State private var timerLeft = 60                            //CHANGE THIS TESTING PURPOSE
-    @State private var isTimerRunning = true
-    
-    //Dynamic array of cards
-    @State private var cards: [Card] = [
-        Card(isLit: false),
-        Card(isLit: false),
-        Card(isLit: false)
-    ]
-    
-    //To get previous level
-    @State private var previousLevel : Int = 1
-    
-    // To stop timer from running
-    @State private var cancellable : Cancellable?
-    
-    //Game Over navigation layer
-    @State private var goToGameover = false
-    
-    @Binding var showGame: Bool 
-     
-    
-    //Identifiable cards each unique
-    struct Card : Identifiable {
-        let id = UUID()
-        var isLit: Bool
-    }
-    
-    //create grid item
-    let columns = [
-        GridItem(),
-        GridItem(),
-        GridItem()
-    ]
-    
-    //to get how much time is spent
-    var elapsedTime: Int  {
-        60 - timerLeft
-    }
-    
-    var lightInterval : Double {
-        switch level {
-        case 1 : return 1.5
-        case 2 : return 1.2
-        case 3 : return 1.0
-        case 4 : return 0.8
-        default: return 1.5
-        }
-    }
-    
-    @State private var lastLightUpdate: Date = .now
-    
-    //Temporary storage
-    @AppStorage("lightItUpHighScore") private var highScore: Int = 0
 
-    
-    //Create an internal timer
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
-    
-    //To save the score in GameSessionMode
-    
-    
+    @StateObject private var viewModel = BlinkGameViewModel()
+
+    @Binding var showGame: Bool
+
     var body: some View {
-        
-        ZStack{
-            Rectangle()
-                .fill(Color.white)
-                .frame(width: 410, height: 370)
-                .shadow(color: .black, radius: 0.5)
-                .position(x: 200, y: -100)
-            
-            
-            //Title
-            Text("Light it up!")
-                .font(.largeTitle)
-                .foregroundColor(Color.blue)
-                .padding()
-                .bold(true)
-                .position(x: 110, y: 35)
-            
-            Text("Score")
-                .font(.system(size: 20))
-                .bold(true)
-                .position(x: 55, y: 110)
-            
-            
-            Text ("\(scoreResult)")
-                .font(.system(size: 40))
-                .bold(true)
-                .foregroundStyle(Color.blue)
-                .position(x: 55, y: 150)
-            
-            Text("Level: ")
-                .font(.system(size: 20))
-                .bold(true)
-                .position(x: 295, y: 130)
-            
-            Text ("\(level)/4")
-                .font(.system(size: 40))
-                .bold(true)
-                .foregroundStyle(Color.blue)
-                .position(x: 360, y: 130)
-            
-            Text ("High Score : \(highScore)")
-                .position(x: 200, y: 190)
-                .foregroundStyle(Color.gray)
-            
-            
-            
-            VStack{
-                LazyVGrid(columns : columns){
-                    ForEach(cards) { card in
-                        Button(action: {
-                            //ACTION HERE
-                            if card.isLit
-                            {
-                                scoreResult += 1
-                            }else{
-                                
-                                if scoreResult <= 2 {
-                                    scoreResult = 0
-                                }else{
-                                    scoreResult -= 3
-                                }
-                            }
-                            
-                        }) {
-                            Rectangle()
-                                .fill(card.isLit ? Color.yellow : Color.blue)
-                                .frame (width: 115, height: 120)
-                                .cornerRadius(12)
-                                
-                                
-                        }
-                    }
-                } //Lazy grid
+        ZStack {
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
+
+            VStack(spacing: 20) {
+                titleSection
+
+                HStack(spacing: 12) {
+                    topMetricsCard
+                    heartsView
+                }
+                .padding(.horizontal, 20)
+
+                Spacer()
+
+                gameGrid
+
+                Spacer()
+
+                timerCapsule
+                    .padding(.bottom, 16)
             }
-            .position(x: 200, y: 420)
-            
-            
-            Text("Timer: \(timerLeft)")
-                .font(.system(size: 20))
-                .bold(true)
-                .foregroundStyle(Color.blue)
-                .position(x: 200, y: 730)
-            
-            
-        }// End of Zstack
-        //This to remove the tab bar from the blink game
+        }
         .toolbar(.hidden, for: .tabBar)
-        
         .onAppear {
-            locationManager.requestPermission()
+            viewModel.startGame()
         }
-        //this modifier explains the each passing second of timer
-        .onReceive(timer) { _ in
-            guard isTimerRunning && timerLeft > 0 else{
-                if timerLeft == 0{
-                    isTimerRunning = false
-                    endGame()
-                    stopTimer()
-                    
-                    if scoreResult > highScore{
-                        highScore = scoreResult
-                    }
-                    
-                    DispatchQueue.main.async {
-                        goToGameover = true
-                    }
+        .onDisappear {
+            viewModel.pauseGame()
+        }
+        .navigationDestination(
+            isPresented: $viewModel.goToGameOver
+        ) {
+            GameOverView(
+                score: viewModel.score,
+                gameMode: .lightItUp,
+                unlockedProvince: viewModel.unlockedProvince,
+                onRestart: {
+                    viewModel.resetGame()
+                },
+                onHome: {
+                    viewModel.goToGameOver = false
+                    showGame = false
                 }
-                return
+            )
+        }
+    }
+
+    // MARK: - Title
+
+    private var titleSection: some View {
+        Text("Light It Up!")
+            .font(.system(.largeTitle, design: .rounded))
+            .fontWeight(.bold)
+            .foregroundColor(.primary)
+            .padding(.top, 8)
+    }
+
+    // MARK: - Grid
+
+    private var gameGrid: some View {
+        LazyVGrid(
+            columns: columns(for: viewModel.level),
+            spacing: 12
+        ) {
+            ForEach(viewModel.cards) { card in
+                Button {
+                    viewModel.selectCard(card)
+                } label: {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(
+                            card.isLit
+                                ? Color.yellow.opacity(0.75)
+                                : Color.blue.opacity(0.3)
+                        )
+                        .frame(
+                            height: tileHeight(
+                                for: viewModel.level
+                            )
+                        )
+                        .shadow(
+                            color: .black.opacity(0.08),
+                            radius: 4,
+                            x: 0,
+                            y: 2
+                        )
+                }
+                .buttonStyle(GrowingButton())
             }
-                timerLeft -= 1
-                
-            
-                
-                
-                let newLevel : Int
-            
-                //Level checker
-                if elapsedTime < 15 {
-                    newLevel = 1
-                }
-                else if elapsedTime < 30 {
-                    newLevel = 2
-                }
-                else if elapsedTime < 45 {
-                    newLevel = 3
-                }
-                else{
-                    newLevel = 4
-                }
-            
-                if newLevel != level {
-                    level = newLevel
-                    setupCards(for: level)
-                }
-            
-                updateLighting()
-            
-            }
-            //After GameOverView it comes back to this layer
-            .navigationDestination(isPresented: $goToGameover) {
-                GameOverView(
-                    score: scoreResult,
-                    gameMode: .lightItUp,
-                    onRestart: {
-                        resetGame()
-                        goToGameover = false
-                    },
-                    onHome: {
-                        goToGameover = false
-                        showGame = false
-                    }
+        }
+        .padding(.horizontal, 20)
+    }
+
+    // MARK: - Metrics
+
+    private var topMetricsCard: some View {
+        HStack(spacing: 0) {
+            metricItem(
+                label: "Score",
+                value: "\(viewModel.score)"
+            )
+
+            Divider()
+                .frame(height: 40)
+
+            metricItem(
+                label: "Level",
+                value: "\(viewModel.level)/4"
+            )
+
+            Divider()
+                .frame(height: 40)
+
+            metricItem(
+                label: "Best",
+                value: "\(viewModel.highScore)"
+            )
+        }
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(
+                    Color(
+                        uiColor: .secondarySystemGroupedBackground
+                    )
                 )
-            }
-        
+                .shadow(
+                    color: .black.opacity(0.08),
+                    radius: 6,
+                    x: 0,
+                    y: 3
+                )
+        )
     }
-    
-    // For each level card increases and then lights 
-    func setupCards(for newLevel: Int){
-        switch newLevel {
+
+    private func metricItem(
+        label: String,
+        value: String
+    ) -> some View {
+        VStack(spacing: 4) {
+            Text(label)
+                .font(.system(.caption, design: .rounded))
+                .foregroundColor(.secondary)
+
+            Text(value)
+                .font(.system(.title2, design: .rounded))
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Hearts
+
+    private var heartsView: some View {
+        HStack(spacing: 8) {
+            ForEach(0..<3, id: \.self) { index in
+                Image(
+                    systemName: index < viewModel.hearts
+                        ? "heart.fill"
+                        : "heart"
+                )
+                .foregroundColor(
+                    index < viewModel.hearts
+                        ? .red
+                        : .gray
+                )
+                .font(.title2)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(
+            Capsule()
+                .fill(
+                    Color(
+                        uiColor: .secondarySystemGroupedBackground
+                    )
+                )
+                .shadow(
+                    color: .black.opacity(0.08),
+                    radius: 4,
+                    x: 0,
+                    y: 2
+                )
+        )
+        .animation(
+            .spring(),
+            value: viewModel.hearts
+        )
+    }
+
+    // MARK: - Timer
+
+    private var timerCapsule: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "timer")
+                .font(
+                    .system(
+                        .subheadline,
+                        design: .rounded
+                    )
+                )
+                .foregroundColor(.secondary)
+
+            Text("\(viewModel.timerLeft)s remaining")
+                .font(
+                    .system(
+                        .headline,
+                        design: .rounded
+                    )
+                )
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(
+            Capsule()
+                .fill(
+                    Color(
+                        uiColor: .secondarySystemGroupedBackground
+                    )
+                )
+                .shadow(
+                    color: .black.opacity(0.08),
+                    radius: 4,
+                    x: 0,
+                    y: 2
+                )
+        )
+    }
+
+    // MARK: - Layout helpers
+
+    private func columns(for level: Int) -> [GridItem] {
+        let columnCount: Int
+
+        switch level {
         case 1:
-            cards = (0..<3).map{ _ in Card(isLit: false)}
-            
+            columnCount = 3
         case 2:
-            cards = (0..<4).map{ _ in Card(isLit: false)}
-            
+            columnCount = 2
+        case 3, 4:
+            columnCount = 3
+        default:
+            columnCount = 3
+        }
+
+        return Array(
+            repeating: GridItem(
+                .flexible(),
+                spacing: 12
+            ),
+            count: columnCount
+        )
+    }
+
+    private func tileHeight(for level: Int) -> CGFloat {
+        switch level {
+        case 1:
+            return 100
+        case 2:
+            return 110
         case 3:
-            cards = (0..<6).map{ _ in Card(isLit: false)}
-            
+            return 90
         case 4:
-            cards = (0..<9).map{ _ in Card(isLit: false)}
-            
-        default :
-            break
+            return 80
+        default:
+            return 100
         }
     }
-    
-    
-    func resetGame(){
-        scoreResult = 0
-        level = 1
-        isTimerRunning = true
-        setupCards(for: level)
-        timerLeft = 60                      //CHANGE THIS FOR TESTING PURPOSE
-    }
-    
-    //To start or cancel timer
-    func startTimer() {
-        // Using autoconnect on the timer; nothing needed here for now.
-        // Keep this in case you later want manual control.
-        // cancellable = timer.connect()
-    }
-    
-    func stopTimer() {
-        cancellable?.cancel()
-        cancellable = nil
-    }
-    
-    //New function to update lighting with level
-    func updateLighting(){
-        
-        let now = Date()
-        
-        if now.timeIntervalSince(lastLightUpdate) >= lightInterval{
-            lastLightUpdate = now
-            
-            for i in cards.indices {
-                cards[i].isLit = false
-            }
-            
-            //For level 4, two cards are lit
-            if level == 4 {
-                let randomIndexes = cards.indices.shuffled().prefix(2)
-                for i in randomIndexes {
-                    cards[i].isLit.toggle()
-                }
-            }else {
-                if let index = cards.indices.randomElement() {
-                    cards[index].isLit.toggle()
-                }
-            }
-        }
-    }
-    
-    func endGame(){
-        
-        guard !hasEndedGame else {
-                return
-            }
-
-        hasEndedGame = true
-        
-        let session = GameSessionModel(
-            mode: .lightItUp,
-            score: scoreResult,
-            timestamp: Date(),
-            latitude: locationManager.latitude,
-            longitude: locationManager.longitude
-        )
-        GameSessionManager.shared.saveSessions(session)
-    }
-    
-    func finishGame(){
-        
-        let session = GameSessionModel(
-            
-            id: UUID(),
-            mode: .tapFrenzy,
-            score : scoreResult,
-            timestamp:Date(),
-            latitude: locationManager.latitude,
-            longitude: locationManager.longitude
-        )
-        GameSessionManager.shared.saveSessions(session)
-    }
-    
 }
-
 
 #Preview {
-    BlinkGame(showGame: .constant(true))
+    NavigationStack {
+        BlinkGame(showGame: .constant(true))
+    }
 }
-

@@ -7,23 +7,40 @@
 import SwiftUI
 
 struct QuizView: View {
-    
+
     @StateObject var vm = QuizViewModel()
     
-    @State var locationManager = LocationManager.shared
+    @StateObject private var soundManager = QuizSoundManager.shared
     
+    @State private var unlockedProvince: SriLankaProvince?
+
+    @State private var hasStartedQuizAudio = false
+    @State private var suspenseRestartTask: Task<Void, Never>?
+    
+    @State private var hasSavedQuizSession = false
+    
+    
+    
+    let settings: QuizSettings
+
+    @State var locationManager = LocationManager.shared
+
     @Binding var showGame: Bool
     
-    let columns = [
-        GridItem (.flexible()),
-        GridItem (.flexible())
-    ]
     
+    
+   
+
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+
     var body: some View {
         Group {
             switch vm.viewState {
             case .loading:
-                ProgressView()
+                loadingView
             case .loaded:
                 quizView
             case .error:
@@ -32,130 +49,289 @@ struct QuizView: View {
                 QuizResultView(
                     score: vm.score,
                     gameMode: .quizRush,
-                    total: vm.questions.count
-                ) {
-                    vm.resetGame()
-                    vm.loadQuestions()
-                }
-            }
-        }
-        .task {
-            vm.loadQuestions()
-        }
-        //Remove the tab bar from the quiz game 
-        .toolbar(.hidden, for: .tabBar)
-    }   //end of body
-    
-    //------------------------------------------------
-    //  This is where loadingView takes place
-    //---------------------------------------------
-    
-    var loadingView : some View {
-        ProgressView("Loading...")
-    } //end of loadingView
-    
-    
-    
-    //------------------------------------------------
-    //  This is where errorView takes place
-    //---------------------------------------------
-    var errorView : some View {
-        
-        VStack {
-            Text("Error loading questions")
-            Button("Retry"){
-                Task { @MainActor in
-                    vm.loadQuestions()
-                }
-            }
-        }
-    } //End of errorView
-    
-    
-    
-    //------------------------------------------------
-    //  This is where quizView takes place
-    //---------------------------------------------
-    var quizView : some View {
-        VStack (spacing : 40) {
-            HStack{
-                Text ("Score : \(vm.score)")
-                    .font(.headline)
-                
-                Spacer()
-                
-                Text ("Question: \(vm.currentIndex + 1) of \(vm.questions.count)")
-                    .font(.headline)
-            }
-            .padding(.horizontal)
-            
-            Spacer()
-            
-            
-            Text (vm.questions[vm.currentIndex].question)
-                .font(.title2)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.leading)
-                .padding()
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(Color(.white))
-                .frame(height: 200) // Gives it that large box size
-                .background(Color(.blue.opacity(0.4))) // Light gray background
-                .cornerRadius(12) // Rounded corners
-                .padding(.horizontal)
-            
-            
-            LazyVGrid(columns: columns, spacing : 16){
-                ForEach(vm.answerOptions, id: \.self){ option in
-                    Button(action: {
-                        vm.answer(option)
-                    }){
-                        Text (option)
-                            .font(.title2)
-                            .bold()
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity) // Makes button fill column width
-                            .frame(height: 80)
-                            .padding(.vertical, 20)      // Gives it that tall, thick look
-                            .background(color(for: option))
-                            .cornerRadius(12)
+                    total: vm.questions.count,
+                    restartAction: {
+                        unlockedProvince = nil
+                        hasSavedQuizSession = false
+
+                        vm.resetGame()
+                        vm.loadQuestions(settings: settings)
+                    },
+                    unlockedProvince: unlockedProvince
+                )
+                .onAppear {
+                    guard !hasSavedQuizSession else {
+                        return
                     }
+
+                    hasSavedQuizSession = true
+                    finishQuiz()
                 }
             }
-            .padding(.horizontal)
-            
-            Spacer()
-            
-            
+        }
+        .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+        .task {
+            vm.loadQuestions(settings: settings)
+        }
+        .onChange(of: vm.viewState) { _, newState in
+            guard case .finished = newState,
+                  !hasSavedQuizSession else {
+                return
+            }
+
+            hasSavedQuizSession = true
+            finishQuiz()
+        }
+        .toolbar(.hidden, for: .tabBar)
+    }
+
+    var loadingView: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+            Text("Loading questions...")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundColor(.secondary)
         }
     }
+
+    var errorView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.largeTitle)
+                .foregroundColor(.secondary)
+            Text("Error loading questions")
+                .font(.system(.headline, design: .rounded))
+            Button("Retry") {
+                Task { @MainActor in
+                    vm.loadQuestions(settings: settings)
+                }
+            }
+            .font(.system(.headline, design: .rounded))
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
+            .background(
+                Capsule()
+                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
+            )
+        }
+    }
+
+    var quizView: some View {
+        VStack(spacing: 24) {
+            HStack {
+                metricCapsule(label: "Score", value: "\(vm.score)")
+                Spacer()
+                metricCapsule(
+                    label: "Question",
+                    value: "\(vm.currentIndex + 1) / \(vm.questions.count)"
+                )
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+
+            Spacer()
+
+            Text(vm.questions[vm.currentIndex].question)
+                .font(.system(.title3, design: .rounded))
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.leading)
+                .foregroundColor(.primary)
+                .padding(20)
+                .frame(maxWidth: .infinity, minHeight: 160, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                        .shadow(color: .black.opacity(0.08), radius: 6, x: 0, y: 3)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                )
+                .padding(.horizontal)
+
+            LazyVGrid(columns: columns, spacing: 14) {
+                ForEach(vm.answerOptions, id: \.self) { option in
+                    Button(action: {
+                        handleAnswer(option)
+                    }) {
+                        Text(option)
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 72)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(color(for: option))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(GrowingButton())
+                    .disabled(vm.showAnswerResult)
+                }
+            }
+            .padding(.horizontal)
+
+            Spacer()
+            
+            timerCapsule
+                .padding(.horizontal)
+                .padding(.bottom, 16)
+        }
+        .onAppear {
+            guard !hasStartedQuizAudio else {
+                return
+            }
+
+            hasStartedQuizAudio = true
+            soundManager.playIntroThenSuspense()
+        }
+        .onChange(of: vm.currentIndex) { oldIndex, newIndex in
+            guard newIndex != oldIndex else {
+                return
+            }
+
+            playQuestionChange()
+        }
+        .onChange(of: vm.timeRemaining) { _, newTime in
+            if newTime == 0 {
+                suspenseRestartTask?.cancel()
+                soundManager.stopSuspense()
+                soundManager.playWrongAnswer()
+            }
+        }
+        .onDisappear {
+            suspenseRestartTask?.cancel()
+            soundManager.stopAllSounds()
+        }
+        
+        
+    }
+
+    private func metricCapsule(label: String, value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(label)
+                .font(.system(.caption, design: .rounded))
+                .foregroundColor(.secondary)
+            Text(value)
+                .font(.system(.subheadline, design: .rounded))
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(
+            Capsule()
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.06), radius: 3, x: 0, y: 2)
+        )
+    }
     
-    
-    // Helper to determine background color for an answer option
+    private func finishQuiz() {
+        let session = GameSessionModel(
+            mode: .quizRush,
+            score: vm.score,
+            timestamp: Date(),
+            latitude: locationManager.latitude,
+            longitude: locationManager.longitude
+        )
+
+        unlockedProvince =
+            GameSessionManager.shared.saveSessions(session)
+
+        print(
+            "Quiz unlocked province:",
+            unlockedProvince?.rawValue ?? "nil"
+        )
+    }
+
     func color(for option: String) -> Color {
-        // Default neutral background color for options
-        
         guard vm.showAnswerResult else {
-            return .gray.opacity(0.25)
-        } //Default color is gray
-        
-        let correct = vm.questions[vm.currentIndex].correct_answer
+            return Color.gray.opacity(0.2)
+        }
+
+        let correct = vm.questions[vm.currentIndex].correctAnswer
         let selectedAnswer = vm.selectedAnswer
-        
+
         if option == correct {
-            return .green
+            return Color.green.opacity(0.35)
         }
         if option == selectedAnswer && option != correct {
-            return .red
+            return Color.red.opacity(0.35)
         }
-        return .gray.opacity(0.25)
-        
+        return Color.gray.opacity(0.2)
     }
+    
+    private func handleAnswer(_ option: String) {
+        guard !vm.showAnswerResult else {
+            return
+        }
 
-}  //end of quiz view
+        suspenseRestartTask?.cancel()
 
+        // Stop suspense as soon as an answer is selected
+        soundManager.stopSuspense()
+
+        let correctAnswer =
+            vm.questions[vm.currentIndex].correctAnswer
+
+        if option == correctAnswer {
+            soundManager.playCorrectAnswer()
+        } else {
+            soundManager.playWrongAnswer()
+        }
+
+        // Continue with your existing answer logic
+        vm.answer(option)
+    }
+    
+    private func playQuestionChange() {
+        suspenseRestartTask?.cancel()
+
+        soundManager.stopSuspense()
+        soundManager.playNextQuestionSound()
+
+        suspenseRestartTask = Task { @MainActor in
+            // Wait for the approximately 2-second transition sound
+            try? await Task.sleep(
+                nanoseconds: 2_000_000_000
+            )
+
+            guard !Task.isCancelled else {
+                return
+            }
+
+            soundManager.playSuspense()
+        }
+    }
+    
+    private var timerCapsule: some View {
+        HStack(spacing: 6) {
+            Text("Time")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundColor(.secondary)
+            Text("⏱\(vm.timeRemaining)")
+                .font(.system(.title3, design: .rounded))
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(
+            Capsule()
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+        )
+    }
+}
 
 #Preview {
-    QuizView(showGame: .constant(true))
+    QuizView(
+        settings : QuizSettings(),
+        showGame: .constant(true)
+    )
 }
 

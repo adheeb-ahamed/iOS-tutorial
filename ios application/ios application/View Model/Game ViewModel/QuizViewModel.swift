@@ -20,6 +20,8 @@ enum ViewState {
 
 class QuizViewModel: ObservableObject {
     private let locationManager = LocationManager.shared
+    
+    @Published private var unlockedProvince: SriLankaProvince?
 
     @Published var questions: [Question] = []
     @Published var currentIndex: Int = 0
@@ -28,13 +30,18 @@ class QuizViewModel: ObservableObject {
     @Published var selectedAnswer: String? = nil
     @Published var showAnswerResult: Bool = false
     @Published var answerOptions : [String] = []
+    
+    @Published var timeRemaining: Int = 60
 
     
     private var hasloaded = false // This is just a guard to check if api is loaded properly
 
     let service = QuizService()
 
-    func loadQuestions() {
+    func loadQuestions(settings : QuizSettings) {
+        
+        timeRemaining = settings.timeLimit
+        
         if hasloaded { return }
         hasloaded = true
         
@@ -43,20 +50,23 @@ class QuizViewModel: ObservableObject {
 
         Task {
             do {
-                let fetched = try await service.getQuestions()
+                let fetched = try await service.getQuestions(settings: settings)
                 print("Fetched questions", fetched.count)
                 print("Starting api request")
 
                 let decodedQuestions = fetched.map { question in
                     Question(
+                        category: question.category,
+                        difficulty: question.difficulty,
                         question: question.question.htmlDecoded,
-                        correct_answer: question.correct_answer.htmlDecoded,
-                        incorrect_answers: question.incorrect_answers.map { $0.htmlDecoded }
+                        correctAnswer: question.correctAnswer.htmlDecoded,
+                        incorrectAnswers: question.incorrectAnswers.map { $0.htmlDecoded }
                     )
                 }
 
                 await MainActor.run {
                     self.questions = decodedQuestions
+                    self.startTimer()
                     self.loadAnswerOptions()
                     self.viewState = .loaded
                     print("API request finished")
@@ -77,7 +87,7 @@ class QuizViewModel: ObservableObject {
         selectedAnswer = selected
         showAnswerResult = true
         
-        let correct = questions[currentIndex].correct_answer
+        let correct = questions[currentIndex].correctAnswer
         
         if selected == correct {
             score += 1
@@ -98,6 +108,7 @@ class QuizViewModel: ObservableObject {
             print("Current Index:", currentIndex)
         } else {
             print("Quiz Finished!")
+            quizTimer?.invalidate()
             endGame()
             viewState = .finished
         }
@@ -107,6 +118,9 @@ class QuizViewModel: ObservableObject {
         score = 0
         currentIndex = 0
         questions = []
+        answerOptions = []
+        selectedAnswer = nil
+        showAnswerResult = false
         viewState = .loading
         hasloaded = false  
     }
@@ -115,7 +129,7 @@ class QuizViewModel: ObservableObject {
     func loadAnswerOptions(){
         let current = questions[currentIndex]
         
-        answerOptions = (current.incorrect_answers + [current.correct_answer]).shuffled()
+        answerOptions = (current.incorrectAnswers + [current.correctAnswer]).shuffled()
     }
     
     func endGame(){
@@ -128,22 +142,41 @@ class QuizViewModel: ObservableObject {
             latitude: locationManager.latitude,
             longitude: locationManager.longitude
         )
-        GameSessionManager.shared.saveSessions(session)
+        let result = GameSessionManager.shared.saveSessions(session)
+        
+        unlockedProvince = result
+        
+        
     }
     
-    func finishGame(){
-        
-        let session = GameSessionModel(
+    private var quizTimer: Timer?
+    
+    func startTimer() {
+        quizTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
             
-            id: UUID(),
-            mode: .tapFrenzy,
-            score : score,
-            timestamp:Date(),
-            latitude: locationManager.latitude,
-            longitude: locationManager.longitude
-        )
-        GameSessionManager.shared.saveSessions(session)
+            guard let self else { return }
+            
+            if self.timeRemaining > 0 {
+                self.timeRemaining -= 1
+            }else {
+                timer.invalidate()
+                self.finishQuiz()
+            }
+        }
     }
+    
+    private func finishQuiz() {
+        // stop timer and finish the quiz
+        quizTimer?.invalidate()
+        quizTimer = nil
+        endGame()
+        viewState = .finished
+    }
+    
+    deinit {
+        quizTimer?.invalidate()
+    }
+    
 }
 
 // End of QuizViewModel

@@ -16,7 +16,7 @@ struct MainTabView: View {
         
         TabView {
             NavigationStack{
-                MainView()
+                MainView(manager: GameSessionManager.shared)
             }
             .tabItem {
                 Label("Home", systemImage: "house.fill")

@@ -13,6 +13,8 @@ struct DailyChallengeModel: Codable, Identifiable {
     let title: String
     let description: String
     let avaialableHour : Int
+    let targetMode: GameMode
+    let dateCreated: Date
     
     var completed: Bool 
 }

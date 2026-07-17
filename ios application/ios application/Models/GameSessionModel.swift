@@ -6,7 +6,7 @@ import Foundation
 import SwiftUI
 
 //Represents the different types of app we are using the gameSession for
-enum GameMode: String, Codable {
+enum GameMode: String, Codable, CaseIterable {
     case tapFrenzy = "Tap Frenzy"
     case lightItUp = "Light it up"
     case quizRush = "Quiz Rush"
@@ -21,6 +21,17 @@ enum GameMode: String, Codable {
             return .blue
         case .quizRush:
             return .yellow
+        }
+    }
+    
+    func coinsEarned(for score : Int) -> Int {
+        switch self {
+        case .tapFrenzy:
+            return max(5, score/2)
+        case .lightItUp:
+            return max(5, score)
+        case .quizRush:
+            return max(5, score * 3)
         }
     }
 }
@@ -39,3 +50,4 @@ struct GameSessionModel: Codable, Identifiable {
     
     
 }
+
