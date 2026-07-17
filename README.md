@@ -28,7 +28,7 @@ The application currently consists of three mini-games—**Tap Frenzy**, **Light
 # Screenshots
 
 
-<table>
+<table cellpadding="20">
   <tr>
     <td align="center">
       <img src="Screenshots/home.jpeg" width="250"/><br>
@@ -61,7 +61,6 @@ The application currently consists of three mini-games—**Tap Frenzy**, **Light
       <b>Province Explorer</b>
     </td>
   </tr>
-
 </table>
 
 ---
